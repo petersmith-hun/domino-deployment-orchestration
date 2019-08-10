@@ -1,0 +1,23 @@
+services:
+
+  # main dependencies
+  app.main:
+    class: 'domino/DominoApplication'
+    arguments: [
+      '@web.component.registrations',
+      '@app.express'
+    ]
+  app.express:
+    factory:
+      class: 'domino/factory/ExpressApplicationFactory'
+      method: 'createExpressApplication'
+
+  # web layer
+  # components
+  web.component.registrations:
+    class: 'domino/web/Registrations'
+    arguments: ['@web.controller.dummy']
+
+  # controllers
+  web.controller.dummy:
+    class: 'domino/web/controller/DummyController'

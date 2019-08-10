@@ -1,0 +1,19 @@
+{
+  "name": "domino",
+  "version": "1.0.0-dev",
+  "description": "Deployment Orchestration for Minor Infrastructures in Node.js",
+  "main": "src/domino_main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Peter Smith",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "config": "^3.2.2",
+    "esm": "^3.2.25",
+    "express": "^4.17.1",
+    "node-dependency-injection": "^2.3.5"
+  }
+}
