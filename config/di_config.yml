@@ -12,6 +12,15 @@ services:
       class: 'domino/web/factory/ExpressApplicationFactory'
       method: 'createExpressApplication'
 
+  # core layer
+  # components
+  core.component.registrations.factory:
+    class: 'domino/core/registration/AppRegistrationsFactory'
+
+  core.component.registrations.registry:
+    class: 'domino/core/registration/AppRegistrationRegistry'
+    arguments: ['@core.component.registrations.factory']
+
   # web layer
   # components
   web.component.registrations:
