@@ -1,4 +1,5 @@
 domino:
+  logfile: logs/domino.log
   server:
     host: localhost
     port: 9987
