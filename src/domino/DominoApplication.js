@@ -1,5 +1,9 @@
 import config from 'config';
 import bodyParser from "body-parser";
+import logManager from "../domino_main";
+
+const packageJson = require("../../package.json");
+const logger = logManager.createLogger('DominoApplication');
 
 /**
  * Domino application entry point.
@@ -24,7 +28,7 @@ export default class DominoApplication {
 		this._express
 			.use(bodyParser.json())
 			.listen(port, host, () => {
-				console.log(`Domino application server is running at http://${host}:${port}/`);
+				logger.info(`Domino (v${packageJson.version}) application server is listening at http://${host}:${port}/`);
 			});
 	}
 }

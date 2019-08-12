@@ -1,7 +1,7 @@
 /**
  * Component to handle controller registrations.
  */
-export default class Registrations {
+export default class ControllerRegistrations {
 
 	constructor(dummyController) {
 		this._dummyController = dummyController;

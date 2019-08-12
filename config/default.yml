@@ -1,4 +1,6 @@
 domino:
+  registrations-path: config/domino-registrations.yml
+  logfile: logs/domino.log
   server:
     host: localhost
     port: 9987

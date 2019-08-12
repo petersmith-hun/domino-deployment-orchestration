@@ -1,8 +1,8 @@
 {
   "name": "domino",
-  "version": "1.0.0-dev",
+  "version": "1.0.0",
   "description": "Deployment Orchestration for Minor Infrastructures in Node.js",
-  "main": "src/domino_main.js",
+  "main": "src/domino_esm_start.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -14,6 +14,8 @@
     "config": "^3.2.2",
     "esm": "^3.2.25",
     "express": "^4.17.1",
-    "node-dependency-injection": "^2.3.5"
+    "js-yaml": "^3.13.1",
+    "node-dependency-injection": "^2.3.5",
+    "simple-node-logger": "^18.12.23"
   }
 }
