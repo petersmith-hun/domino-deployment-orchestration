@@ -1,4 +1,5 @@
 import WebErrorHandlers from "./error/handler/WebErrorHandlers";
+import config from "config";
 
 /**
  * Component to handle controller registrations.
@@ -8,21 +9,22 @@ export default class ControllerRegistrations {
 	constructor(multerFactory, uploadController) {
 		this._multer = multerFactory.createExpressMulter();
 		this._uploadController = uploadController;
+		this._storageConfig = config.get("domino.storage");
 	}
 
 	/**
 	 * Starts registering routes.
 	 *
-	 * @param app Express application object
+	 * @param expressApp Express application object
 	 */
-	registerRoutes(app) {
-
-		// TODO add switch to enable/disable this endpoint
+	registerRoutes(expressApp) {
 
 		// upload controller registration
-		app
-			.post("/upload/:app/:version", this._multer.single("executable"),
-				(req, resp) => this._uploadController.uploadExecutable(req, resp))
-			.use(WebErrorHandlers.uploadErrorHandler);
+		if (this._storageConfig["enable-upload"]) {
+			expressApp
+				.post("/upload/:app/:version", this._multer.single("executable"),
+					(req, resp) => this._uploadController.uploadExecutable(req, resp))
+				.use(WebErrorHandlers.uploadErrorHandler);
+		}
 	}
 }

@@ -1,18 +1,13 @@
 import config from "config";
 import multer from "multer";
-import logManager from "../../../domino_main";
-import NonAcceptableMimeTypeError from "../error/NonAcceptableMimeTypeError";
-import NonRegisteredAppError from "../error/NonRegisteredAppError";
-
-const logger = logManager.createLogger("ExpressMulterFactory");
 
 /**
  * Factory that creates a Multer multipart/form-data handler middleware for Express.
  */
 export default class ExpressMulterFactory {
 
-	constructor(appRegistrationRegistry) {
-		this._appRegistrationRegistry = appRegistrationRegistry;
+	constructor(executableUtility) {
+		this._executableUtility = executableUtility;
 		this._storageConfig = config.get("domino.storage");
 	}
 
@@ -23,45 +18,29 @@ export default class ExpressMulterFactory {
 	 */
 	createExpressMulter() {
 		return multer({
-			storage: this._configureStorage(this._storageConfig),
-			fileFilter: this._configureFileFilter(this._appRegistrationRegistry, this._storageConfig),
+			storage: this._configureStorage(this._storageConfig, this._executableUtility),
+			fileFilter: this._configureFileFilter(this._executableUtility),
 			limits: this._configureLimits()
 		});
 	}
 
-	_configureStorage(storageConfig) {
+	_configureStorage(storageConfig, executableUtility) {
 		return multer.diskStorage({
-			destination: function (req, file, cb) {
-				cb(null, storageConfig.path)
-			},
-			filename: function (req, file, cb) {
-
-				let filenameParts = file.originalname.split('.');
-				let extension = filenameParts[filenameParts.length - 1];
-				let filename = `executable-${req.params.app}-v${req.params.version}.${extension}`;
-
-				cb(null, filename)
-			}
+			destination: (req, file, cb) => cb(null, storageConfig.path),
+			filename: (req, file, cb) => cb(null, executableUtility.createFilename(file, req.params))
 		});
 	}
 
-	_configureFileFilter(appRegistrationRegistry, storageConfig) {
+	_configureFileFilter(executableUtility) {
 		return function (req, file, cb) {
-
-			let error = null;
-			if (!storageConfig["accepted-mime-types"].includes(file.mimetype)) {
-				logger.warn(`File with originalName=${file.originalname} has non-accepted mimeType=${file.mimetype} - rejecting upload`);
-				error = new NonAcceptableMimeTypeError();
+			try {
+				executableUtility.assertAcceptedMime(file);
+				executableUtility.assertRegisteredApp(file, req.params);
+				executableUtility.assertNonExistingExecutable(file, req.params);
+				cb(null, true);
+			} catch (error) {
+				cb(error);
 			}
-
-			if (!(error || appRegistrationRegistry.getExistingRegistrations().includes(req.params.app))) {
-				logger.warn(`File with originalName=${file.originalname} for app=${req.params.app} is not registered - rejecting upload`);
-				error = new NonRegisteredAppError();
-			}
-
-			// TODO add file existence check
-
-			cb(error, true);
 		}
 	}
 

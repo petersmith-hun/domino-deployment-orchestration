@@ -1,0 +1,114 @@
+import config from "config";
+import fs from "fs";
+import path from "path";
+import logManager from "../../../domino_main";
+import NonAcceptableMimeTypeError from "../error/NonAcceptableMimeTypeError";
+import NonRegisteredAppError from "../error/NonRegisteredAppError";
+import AlreadyExistingExecutableError from "../error/AlreadyExistingExecutableError";
+
+const logger = logManager.createLogger("ExecutableUtility");
+
+/**
+ * File handling utilities.
+ */
+export default class ExecutableUtility {
+
+	constructor(appRegistrationRegistry) {
+		this._appRegistrationRegistry = appRegistrationRegistry;
+		this._storageConfig = config.get("domino.storage");
+	}
+
+	/**
+	 * Checks if the given file's MIME-type is allowed by the configuration.
+	 *
+	 * @param file file object (mimetype field must be existing)
+	 * @returns {boolean} true if the MIME-type of the file is allowed, false otherwise
+	 */
+	isMimeAccepted(file) {
+		return this._storageConfig["accepted-mime-types"].includes(file.mimetype);
+	}
+
+	/**
+	 * Asserts that the given file's MIME-type is allowed by the configuration.
+	 *
+	 * @param file file object (mimetype and originalname fields must be existing)
+	 * @throws NonAcceptableMimeTypeError if the MIME-type is not allowed
+	 */
+	assertAcceptedMime(file) {
+
+		if (!this.isMimeAccepted(file)) {
+			logger.error(`File with originalName=${file.originalname} has non-accepted mimeType=${file.mimetype} - rejecting upload`);
+			throw new NonAcceptableMimeTypeError();
+		}
+	}
+
+	/**
+	 * Checks if the given application (in request parameters) is registered.
+	 *
+	 * @param requestParams parameter map object (app field must be existing)
+	 * @returns {boolean} true if the application is registered, false otherwise
+	 */
+	isRegistered(requestParams) {
+		return this._appRegistrationRegistry.getExistingRegistrations().includes(requestParams.app);
+	}
+
+	/**
+	 * Asserts that the given application is registered.
+	 *
+	 * @param file file object (app and originalname fields must be existing)
+	 * @param requestParams parameter map object (app field must be existing)
+	 * @throws NonRegisteredAppError if the application is not registered
+	 */
+	assertRegisteredApp(file, requestParams) {
+
+		if (!this.isRegistered(requestParams)) {
+			logger.error(`File with originalName=${file.originalname} for app=${requestParams.app} is not registered - rejecting upload`);
+			throw new NonRegisteredAppError();
+		}
+	}
+
+	/**
+	 * Checks if the given file existing on the storage path.
+	 *
+	 * @param file file object (originalname field must be existing)
+	 * @param requestParams parameter map object (app and version fields must be existing)
+	 * @returns {boolean} true if the file already exists, false otherwise
+	 */
+	exists(file, requestParams) {
+
+		let filename = this.createFilename(file, requestParams);
+		let executablePath = path.join(this._storageConfig.path, filename);
+
+		return fs.existsSync(executablePath);
+	}
+
+	/**
+	 * Asserts that the given file is not existing.
+	 *
+	 * @param file file object (originalname field must be existing)
+	 * @param requestParams parameter map object (app and version fields must be existing)
+	 * @throws AlreadyExistingExecutableError if the file already exists
+	 */
+	assertNonExistingExecutable(file, requestParams) {
+
+		if (this.exists(file, requestParams)) {
+			logger.error(`File with originalName=${file.originalname} for app=${requestParams.app} with version=${requestParams.version} already exists - rejecting upload`);
+			throw new AlreadyExistingExecutableError();
+		}
+	}
+
+	/**
+	 * Forms a proper filename which the executable will be stored with.
+	 *
+	 * @param file file object (originalname field must be existing)
+	 * @param requestParams parameter map object (app and version fields must be existing)
+	 * @returns {string} created filename
+	 */
+	createFilename(file, requestParams) {
+
+		let filenameParts = file.originalname.split('.');
+		let extension = filenameParts[filenameParts.length - 1];
+
+		return `executable-${requestParams.app}-v${requestParams.version}.${extension}`;
+	}
+}

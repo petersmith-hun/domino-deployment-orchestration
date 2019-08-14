@@ -32,6 +32,10 @@ services:
 
   web.component.factory.multer:
     class: 'domino/web/factory/ExpressMulterFactory'
+    arguments: ['@web.component.exec-utility']
+
+  web.component.exec-utility:
+    class: 'domino/web/util/ExecutableUtility'
     arguments: ['@core.component.registrations.registry']
 
   # controllers
