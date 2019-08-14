@@ -19,6 +19,12 @@ export default class ControllerRegistrations {
 	 */
 	registerRoutes(expressApp) {
 
+		// common middleware to mark call start time
+		expressApp.use((req, resp, next) => {
+			req.callStartTime = process.hrtime();
+			next();
+		});
+
 		// upload controller registration
 		if (this._storageConfig["enable-upload"]) {
 			expressApp

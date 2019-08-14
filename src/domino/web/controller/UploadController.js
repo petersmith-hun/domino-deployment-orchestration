@@ -33,6 +33,9 @@ export default class UploadController extends BaseController {
 			this._deploymentService.deploy(req.params.app, req.params.version);
 		}
 
-		resp.status(HTTP_STATUS_CREATED).send();
+		resp.status(HTTP_STATUS_CREATED)
+			.send({
+				message: `Uploaded in ${this.getProcessingTime(req)} ms`
+			});
 	}
 }
