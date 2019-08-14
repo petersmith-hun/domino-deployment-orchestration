@@ -1,10 +1,13 @@
+import WebErrorHandlers from "./error/handler/WebErrorHandlers";
+
 /**
  * Component to handle controller registrations.
  */
 export default class ControllerRegistrations {
 
-	constructor(dummyController) {
-		this._dummyController = dummyController;
+	constructor(multerFactory, uploadController) {
+		this._multer = multerFactory.createExpressMulter();
+		this._uploadController = uploadController;
 	}
 
 	/**
@@ -14,9 +17,12 @@ export default class ControllerRegistrations {
 	 */
 	registerRoutes(app) {
 
-		// register dummy endpoints
-		app.route('/dummy')
-			.get((req, resp) => this._dummyController.getDummyResponse(req, resp))
-			.post((req, resp) => this._dummyController.postDummyRequest(req, resp));
+		// TODO add switch to enable/disable this endpoint
+
+		// upload controller registration
+		app
+			.post("/upload/:app/:version", this._multer.single("executable"),
+				(req, resp) => this._uploadController.uploadExecutable(req, resp))
+			.use(WebErrorHandlers.uploadErrorHandler);
 	}
 }

@@ -25,8 +25,15 @@ services:
   # components
   web.component.registrations:
     class: 'domino/web/ControllerRegistrations'
-    arguments: ['@web.controller.dummy']
+    arguments: [
+      '@web.component.factory.multer',
+      '@web.controller.upload'
+    ]
+
+  web.component.factory.multer:
+    class: 'domino/web/factory/ExpressMulterFactory'
+    arguments: ['@core.component.registrations.registry']
 
   # controllers
-  web.controller.dummy:
-    class: 'domino/web/controller/DummyController'
+  web.controller.upload:
+    class: 'domino/web/controller/UploadController'
