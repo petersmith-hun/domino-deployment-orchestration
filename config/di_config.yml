@@ -21,6 +21,10 @@ services:
     class: 'domino/core/registration/AppRegistrationRegistry'
     arguments: ['@core.component.registrations.factory']
 
+  # services
+  core.service.deployment:
+    class: 'domino/core/service/DeploymentService'
+
   # web layer
   # components
   web.component.registrations:
@@ -41,3 +45,4 @@ services:
   # controllers
   web.controller.upload:
     class: 'domino/web/controller/UploadController'
+    arguments: ['@core.service.deployment']

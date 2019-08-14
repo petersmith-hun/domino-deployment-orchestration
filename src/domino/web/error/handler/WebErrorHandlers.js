@@ -35,7 +35,7 @@ export default class WebErrorHandlers {
 		} else if (err instanceof AlreadyExistingExecutableError) {
 			status = HTTP_STATUS_CONFLICTING;
 		} else {
-			logger.error("Unhandled error occurred while upload file", err);
+			logger.error("Unhandled error occurred while upload file\n", err);
 			status = HTTP_STATUS_INTERNAL_SERVER_ERROR;
 		}
 
