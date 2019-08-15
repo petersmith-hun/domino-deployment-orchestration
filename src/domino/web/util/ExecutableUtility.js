@@ -55,7 +55,7 @@ export default class ExecutableUtility {
 	/**
 	 * Asserts that the given application is registered.
 	 *
-	 * @param file file object (app and originalname fields must be existing)
+	 * @param file file object (originalname fields must be existing)
 	 * @param requestParams parameter map object (app field must be existing)
 	 * @throws NonRegisteredAppError if the application is not registered
 	 */
@@ -68,7 +68,7 @@ export default class ExecutableUtility {
 	}
 
 	/**
-	 * Checks if the given file existing on the storage path.
+	 * Checks if the given file exists on the storage path.
 	 *
 	 * @param file file object (originalname field must be existing)
 	 * @param requestParams parameter map object (app and version fields must be existing)
