@@ -1,6 +1,12 @@
 domino:
   registrations-path: config/domino-registrations.yml
   logfile: logs/domino.log
+  storage:
+    enable-upload: true
+    accepted-mime-types:
+      - application/java-archive
+    max-size: 100MB
+    path: storage/
   server:
     host: localhost
     port: 9987

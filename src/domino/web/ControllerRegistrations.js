@@ -1,22 +1,36 @@
+import WebErrorHandlers from "./error/handler/WebErrorHandlers";
+import config from "config";
+
 /**
  * Component to handle controller registrations.
  */
 export default class ControllerRegistrations {
 
-	constructor(dummyController) {
-		this._dummyController = dummyController;
+	constructor(multerFactory, uploadController) {
+		this._multer = multerFactory.createExpressMulter();
+		this._uploadController = uploadController;
+		this._storageConfig = config.get("domino.storage");
 	}
 
 	/**
 	 * Starts registering routes.
 	 *
-	 * @param app Express application object
+	 * @param expressApp Express application object
 	 */
-	registerRoutes(app) {
+	registerRoutes(expressApp) {
 
-		// register dummy endpoints
-		app.route('/dummy')
-			.get((req, resp) => this._dummyController.getDummyResponse(req, resp))
-			.post((req, resp) => this._dummyController.postDummyRequest(req, resp));
+		// common middleware to mark call start time
+		expressApp.use((req, resp, next) => {
+			req.callStartTime = process.hrtime();
+			next();
+		});
+
+		// upload controller registration
+		if (this._storageConfig["enable-upload"]) {
+			expressApp
+				.post("/upload/:app/:version", this._multer.single("executable"),
+					(req, resp) => this._uploadController.uploadExecutable(req, resp))
+				.use(WebErrorHandlers.uploadErrorHandler);
+		}
 	}
 }
