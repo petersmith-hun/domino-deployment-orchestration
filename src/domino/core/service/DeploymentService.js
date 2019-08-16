@@ -7,8 +7,9 @@ const logger = logManager.createLogger("DeploymentService");
  */
 export default class DeploymentService {
 
-	constructor() {
-
+	constructor(appRegistrationRegistry, deploymentHandlerRegistry) {
+		this._appRegistrationRegistry = appRegistrationRegistry;
+		this._deploymentHandlerRegistry = deploymentHandlerRegistry;
 	}
 
 	/**
@@ -18,6 +19,26 @@ export default class DeploymentService {
 	 * @param version version of the application to be deployed
 	 */
 	deploy(app, version) {
-		logger.warn("Not implemented");
+		let registration = this._getRegistration(app);
+		this._deploymentHandlerRegistry.deploy(registration, version);
+	}
+
+	start(app) {
+		let registration = this._getRegistration(app);
+		this._deploymentHandlerRegistry.start(registration);
+	}
+
+	stop(app) {
+		let registration = this._getRegistration(app);
+		this._deploymentHandlerRegistry.stop(registration);
+	}
+
+	restart(app) {
+		let registration = this._getRegistration(app);
+		this._deploymentHandlerRegistry.restart(registration);
+	}
+
+	_getRegistration(app) {
+		return this._appRegistrationRegistry.getRegistration(app);
 	}
 }

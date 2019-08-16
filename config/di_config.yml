@@ -21,9 +21,36 @@ services:
     class: 'domino/core/registration/AppRegistrationRegistry'
     arguments: ['@core.component.registrations.factory']
 
+  core.component.deployment.handler.registry:
+    class: 'domino/core/deployment/DeploymentHandlerRegistry'
+    arguments: [
+      '@core.component.deployment.handler.fs-executable',
+      '@core.component.deployment.handler.fs-runtime',
+      '@core.component.deployment.handler.fs-service'
+    ]
+
+  core.component.utility.filename:
+    class: 'domino/core/util/FilenameUtility'
+
+  core.component.deployment.handler.fs-executable:
+    class: 'domino/core/deployment/handler/ExecutableDeploymentHandler'
+    arguments: ['@core.component.utility.filename']
+
+  core.component.deployment.handler.fs-runtime:
+    class: 'domino/core/deployment/handler/RuntimeDeploymentHandler'
+    arguments: ['@core.component.utility.filename']
+
+  core.component.deployment.handler.fs-service:
+    class: 'domino/core/deployment/handler/ServiceDeploymentHandler'
+    arguments: ['@core.component.utility.filename']
+
   # services
   core.service.deployment:
     class: 'domino/core/service/DeploymentService'
+    arguments: [
+      '@core.component.registrations.registry',
+      '@core.component.deployment.handler.registry'
+    ]
 
   # web layer
   # components
@@ -36,11 +63,17 @@ services:
 
   web.component.factory.multer:
     class: 'domino/web/factory/ExpressMulterFactory'
-    arguments: ['@web.component.exec-utility']
+    arguments: [
+      '@web.component.exec-utility',
+      '@core.component.utility.filename'
+    ]
 
   web.component.exec-utility:
     class: 'domino/web/util/ExecutableUtility'
-    arguments: ['@core.component.registrations.registry']
+    arguments: [
+      '@core.component.registrations.registry',
+      '@core.component.utility.filename'
+    ]
 
   # controllers
   web.controller.upload:
