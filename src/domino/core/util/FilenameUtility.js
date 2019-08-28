@@ -1,3 +1,6 @@
+/**
+ * Utility for properly forming filenames used in executable storage.
+ */
 export default class FilenameUtility {
 
 	/**

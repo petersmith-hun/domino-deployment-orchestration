@@ -1,5 +1,8 @@
 import UnsupportedDeploymentMode from "../error/UnsupportedDeploymentMode";
 
+/**
+ * Registry component holding information about the registered (available) deployment handlers.
+ */
 export default class DeploymentHandlerRegistry {
 
 	constructor(executableDeploymentHandler, runtimeDeploymentHandler, serviceDeploymentHandler) {
@@ -12,26 +15,20 @@ export default class DeploymentHandlerRegistry {
 		}
 	}
 
-	deploy(registration, version) {
-		this._getHandler(registration).deploy(registration, version);
-	}
+	/**
+	 * Retrieves deployment handler component for the given registration.
+	 * Throws exception in case of requesting a non-supported deployment mode.
+	 *
+	 * @param registration application registration object as AppRegistration
+	 * @returns supported deployment handler instance or exception
+	 */
+	getHandler(registration) {
 
-	start(registration) {
-		this._getHandler(registration).start(registration);
-	}
-
-	stop(registration) {
-		this._getHandler(registration).stop(registration);
-	}
-
-	restart(registration) {
-		this._getHandler(registration).restart(registration);
-	}
-
-	_getHandler(registration) {
+		const sourceType = registration.source.type.toLowerCase();
+		const executionMode = registration.execution.executionHandler.toLowerCase();
 
 		try {
-			return this._registry[registration.source.type.toLowerCase()][registration.execution.executionHandler.toLowerCase()];
+			return this._registry[sourceType][executionMode];
 		} catch (e) {
 			throw new UnsupportedDeploymentMode(registration);
 		}

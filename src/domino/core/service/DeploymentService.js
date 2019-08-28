@@ -1,7 +1,3 @@
-import logManager from "../../../domino_main";
-
-const logger = logManager.createLogger("DeploymentService");
-
 /**
  * Service for deployment handling operations.
  */
@@ -20,22 +16,45 @@ export default class DeploymentService {
 	 */
 	deploy(app, version) {
 		let registration = this._getRegistration(app);
-		this._deploymentHandlerRegistry.deploy(registration, version);
+		this._deploymentHandlerRegistry
+			.getHandler(registration)
+			.deploy(registration, version);
 	}
 
+	/**
+	 * Starts the currently deployed version of the application.
+	 *
+	 * @param app application to be started
+	 */
 	start(app) {
 		let registration = this._getRegistration(app);
-		this._deploymentHandlerRegistry.start(registration);
+		this._deploymentHandlerRegistry
+			.getHandler(registration)
+			.start(registration);
 	}
 
+	/**
+	 * Stops the currently running instance of the application.
+	 *
+	 * @param app application to be stopped
+	 */
 	stop(app) {
 		let registration = this._getRegistration(app);
-		this._deploymentHandlerRegistry.stop(registration);
+		this._deploymentHandlerRegistry
+			.getHandler(registration)
+			.stop(registration);
 	}
 
+	/**
+	 * Restarts the currently running instance of the application.
+	 *
+	 * @param app application to be restarted
+	 */
 	restart(app) {
 		let registration = this._getRegistration(app);
-		this._deploymentHandlerRegistry.restart(registration);
+		this._deploymentHandlerRegistry
+			.getHandler(registration)
+			.restart(registration);
 	}
 
 	_getRegistration(app) {

@@ -1,3 +1,6 @@
+/**
+ * Error to be thrown when the selected deployment mode for an application is not supported.
+ */
 export default class UnsupportedDeploymentMode extends Error {
 
 	constructor(registration) {
