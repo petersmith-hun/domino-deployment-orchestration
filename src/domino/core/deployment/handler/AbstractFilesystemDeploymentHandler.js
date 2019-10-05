@@ -6,15 +6,18 @@ import logManager from "../../../../domino_main";
 
 const logger = logManager.createLogger("AbstractFilesystemDeploymentHandler");
 
+const DEFAULT_EXECUTION_PERMISSION = 0o744;
+
 /**
  * Common (abstract) AbstractDeploymentHandler implementation that handles deployment phase of an application for
  * application handled directly with shell commands (eg. FILESYSTEM source typed applications).
  */
-export default class AbstractFilesystemDeploymentHandler extends AbstractDeploymentHandler{
+export default class AbstractFilesystemDeploymentHandler extends AbstractDeploymentHandler {
 
-	constructor(filenameUtility) {
+	constructor(filenameUtility, executorUserRegistry) {
 		super();
 		this._filenameUtility = filenameUtility;
+		this._executorUserRegistry = executorUserRegistry;
 		this._storageConfig = config.get("domino.storage");
 	}
 
@@ -26,18 +29,35 @@ export default class AbstractFilesystemDeploymentHandler extends AbstractDeploym
 	 */
 	deploy(registration, version) {
 
-		const storedFilename = this._filenameUtility.createFilename({
-			originalname: registration.source.resource,
-			app: registration.appName,
-			version: version});
-		const source = path.join(this._storageConfig.path, storedFilename);
-		const target = path.join(registration.source.home, registration.source.resource);
+		logger.info(`Deploying app=${registration.appName} with version=${version}...`);
+
+		const storedFilename = this._prepareStoredFilename(registration, version);
+		const source = this._prepareSourcePath(storedFilename);
+		const target = this._prepareTargetPath(registration);
 
 		try {
+			const userID = this._executorUserRegistry.getUserID(registration);
 			fs.copyFileSync(source, target);
+			fs.chmodSync(target, DEFAULT_EXECUTION_PERMISSION);
+			fs.chownSync(target, userID, userID);
 			logger.info(`Successfully deployed app=${registration.appName} from=${source} to=${target}`);
 		} catch (e) {
 			logger.error(`Failed to deploy app=${registration.appName} from=${source} to=${target}, reason=${e.message}`)
 		}
+	}
+	_prepareStoredFilename(registration, version) {
+		return this._filenameUtility.createFilename({
+			originalname: registration.source.resource,
+			app: registration.appName,
+			version: version
+		});
+	}
+
+	_prepareSourcePath(storedFilename) {
+		return path.join(this._storageConfig.path, storedFilename);
+	}
+
+	_prepareTargetPath(registration) {
+		return path.join(registration.source.home, registration.source.resource);
 	}
 }

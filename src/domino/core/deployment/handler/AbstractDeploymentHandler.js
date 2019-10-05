@@ -34,10 +34,12 @@ export default class AbstractDeploymentHandler {
 
 	/**
 	 * Restarts the application specified by the passed registration object.
+	 * As for the default behavior, restart calls stop and the start methods.
 	 *
 	 * @param registration AppRegistration object containing information about the application to be restarted
 	 */
 	restart(registration) {
-		throw new Error("Not implemented operation");
+		this.stop(registration);
+		this.start(registration);
 	}
 }

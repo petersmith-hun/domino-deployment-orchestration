@@ -6,8 +6,35 @@ import AbstractFilesystemDeploymentHandler from "./AbstractFilesystemDeploymentH
  */
 export default class ServiceDeploymentHandler extends AbstractFilesystemDeploymentHandler {
 
-	constructor(filenameUtility) {
-		super(filenameUtility);
+	constructor(filenameUtility, executorUserRegistry, serviceAdapterRegistry) {
+		super(filenameUtility, executorUserRegistry);
+		this._serviceAdapter = serviceAdapterRegistry.getServiceAdapter();
 	}
 
+	/**
+	 * Starts the application by calling its service name with the start command.
+	 *
+	 * @param registration AppRegistration object containing information about the application to be started
+	 */
+	start(registration) {
+		this._serviceAdapter.start(registration.execution.commandName);
+	}
+
+	/**
+	 * Stops the application by calling its service name with the stop command.
+	 *
+	 * @param registration AppRegistration object containing information about the application to be stopped
+	 */
+	stop(registration) {
+		this._serviceAdapter.stop(registration.execution.commandName);
+	}
+
+	/**
+	 * Restarts the application by calling its service name with the restart command.
+	 *
+	 * @param registration AppRegistration object containing information about the application to be restarted
+	 */
+	restart(registration) {
+		this._serviceAdapter.restart(registration.execution.commandName);
+	}
 }

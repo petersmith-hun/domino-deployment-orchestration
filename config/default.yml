@@ -10,3 +10,4 @@ domino:
   server:
     host: localhost
     port: 9987
+  service-handler: systemd

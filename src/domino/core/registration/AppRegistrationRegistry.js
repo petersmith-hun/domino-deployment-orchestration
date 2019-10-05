@@ -12,11 +12,12 @@ const logger = logManager.createLogger("AppRegistrationRegistry");
  */
 export default class AppRegistrationRegistry {
 
-	constructor(registrationFactory) {
+	constructor(registrationFactory, executorUserRegistry) {
 		this._registrationFactory = registrationFactory;
 		this._registrationsConfigFile = config.get("domino.registrations-path");
 		this._registrations = null;
 		this._init();
+		executorUserRegistry.registerExecutorUsers(this._registrations);
 	}
 
 	/**

@@ -21,6 +21,7 @@ export default class UploadController extends BaseController {
 	 *  - version: version of the executable being uploaded
 	 * Optional query parameter:
 	 *  - autodeploy: if set to true, deployment commences immediately right after the upload finishes
+	 *  - autostart: if set to true, application is started after a successful deploy
 	 *
 	 * @param req Express request object
 	 * @param resp Express response object
@@ -31,6 +32,10 @@ export default class UploadController extends BaseController {
 
 		if (req.query.autodeploy) {
 			this._deploymentService.deploy(req.params.app, req.params.version);
+
+			if (req.query.autostart) {
+				this._deploymentService.restart(req.params.app);
+			}
 		}
 
 		resp.status(HTTP_STATUS_CREATED)

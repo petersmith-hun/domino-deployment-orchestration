@@ -6,7 +6,7 @@ import AbstractFilesystemDeploymentHandler from "./AbstractFilesystemDeploymentH
  */
 export default class RuntimeDeploymentHandler extends AbstractFilesystemDeploymentHandler {
 
-	constructor(filenameUtility) {
-		super(filenameUtility);
+	constructor(filenameUtility, executorUserRegistry) {
+		super(filenameUtility, executorUserRegistry);
 	}
 }

@@ -19,7 +19,13 @@ services:
 
   core.component.registrations.registry:
     class: 'domino/core/registration/AppRegistrationRegistry'
-    arguments: ['@core.component.registrations.factory']
+    arguments: [
+      '@core.component.registrations.factory',
+      '@core.component.registrations.execuser'
+    ]
+
+  core.component.registrations.execuser:
+    class: 'domino/core/registration/ExecutorUserRegistry'
 
   core.component.deployment.handler.registry:
     class: 'domino/core/deployment/DeploymentHandlerRegistry'
@@ -34,15 +40,34 @@ services:
 
   core.component.deployment.handler.fs-executable:
     class: 'domino/core/deployment/handler/ExecutableDeploymentHandler'
-    arguments: ['@core.component.utility.filename']
+    arguments: [
+      '@core.component.utility.filename',
+      '@core.component.registrations.execuser'
+    ]
 
   core.component.deployment.handler.fs-runtime:
     class: 'domino/core/deployment/handler/RuntimeDeploymentHandler'
-    arguments: ['@core.component.utility.filename']
+    arguments: [
+      '@core.component.utility.filename',
+      '@core.component.registrations.execuser'
+    ]
 
   core.component.deployment.handler.fs-service:
     class: 'domino/core/deployment/handler/ServiceDeploymentHandler'
-    arguments: ['@core.component.utility.filename']
+    arguments: [
+      '@core.component.utility.filename',
+      '@core.component.registrations.execuser',
+      '@core.component.svc-adapter.registry'
+    ]
+
+  core.component.svc-adapter.systemd:
+    class: 'domino/core/deployment/handler/service/SystemdServiceAdapter'
+
+  core.component.svc-adapter.registry:
+    class: 'domino/core/deployment/handler/service/ServiceAdapterRegistry'
+    arguments: [
+      '@core.component.svc-adapter.systemd'
+    ]
 
   # services
   core.service.deployment:
