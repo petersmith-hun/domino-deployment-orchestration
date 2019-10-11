@@ -40,6 +40,6 @@ export default class AbstractDeploymentHandler {
 	 */
 	restart(registration) {
 		this.stop(registration);
-		this.start(registration);
+		setTimeout(() => this.start(registration), 3000);
 	}
 }

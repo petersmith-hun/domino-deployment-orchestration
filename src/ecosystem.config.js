@@ -4,7 +4,7 @@
 module.exports = {
 	apps: [{
 		name: "domino",
-		script: "./domino_esm_start.js",
+		script: "./src/domino_esm_start.js",
 		watch: true,
 		ignore_watch: [
 			"logs",
@@ -17,6 +17,7 @@ module.exports = {
 		node_args: [
 			// --inspect-brk to wait for attach
 			"--inspect=0.0.0.0:7099"
-		]
+		],
+		max_restarts: 1
 	}]
 };

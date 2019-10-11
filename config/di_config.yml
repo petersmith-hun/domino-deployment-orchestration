@@ -17,11 +17,15 @@ services:
   core.component.registrations.factory:
     class: 'domino/core/registration/AppRegistrationsFactory'
 
+  core.component.runtimes.factory:
+    class: 'domino/core/registration/RuntimeRegistrationsFactory'
+
   core.component.registrations.registry:
     class: 'domino/core/registration/AppRegistrationRegistry'
     arguments: [
       '@core.component.registrations.factory',
-      '@core.component.registrations.execuser'
+      '@core.component.registrations.execuser',
+      '@core.component.runtimes.factory'
     ]
 
   core.component.registrations.execuser:
@@ -38,18 +42,24 @@ services:
   core.component.utility.filename:
     class: 'domino/core/util/FilenameUtility'
 
+  core.component.utility.exec-binary-handler:
+    class: 'domino/core/deployment/handler/util/ExecutableBinaryHandler'
+
   core.component.deployment.handler.fs-executable:
     class: 'domino/core/deployment/handler/ExecutableDeploymentHandler'
     arguments: [
       '@core.component.utility.filename',
-      '@core.component.registrations.execuser'
+      '@core.component.registrations.execuser',
+      '@core.component.utility.exec-binary-handler'
     ]
 
   core.component.deployment.handler.fs-runtime:
     class: 'domino/core/deployment/handler/RuntimeDeploymentHandler'
     arguments: [
       '@core.component.utility.filename',
-      '@core.component.registrations.execuser'
+      '@core.component.registrations.execuser',
+      '@core.component.utility.exec-binary-handler',
+      '@core.component.registrations.registry'
     ]
 
   core.component.deployment.handler.fs-service:

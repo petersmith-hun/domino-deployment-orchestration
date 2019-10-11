@@ -12,25 +12,45 @@ const _COMPATIBLE_SERVICE_HANDLER = "systemd";
  */
 export default class SystemdServiceAdapter extends AbstractServiceAdapter {
 
+	/**
+	 * Starts the application as a Systemd compatible system service.
+	 *
+	 * @param serviceName app's service name
+	 */
 	start(serviceName) {
 		this._executeCommand(serviceName, _COMMAND_START);
 	}
 
+	/**
+	 * Stops the application as a Systemd compatible system service.
+	 *
+	 * @param serviceName app's service name
+	 */
 	stop(serviceName) {
 		this._executeCommand(serviceName, _COMMAND_STOP);
 	}
 
+	/**
+	 * Restarts the application as a Systemd compatible system service.
+	 *
+	 * @param serviceName app's service name
+	 */
 	restart(serviceName) {
 		this._executeCommand(serviceName, _COMMAND_RESTART);
 	}
 
+	/**
+	 * Returns 'systemd' as the compatible service handler.
+	 *
+	 * @returns {string} 'systemd', being the compatible service handler
+	 */
 	serviceHandlerCompatibility() {
 		return _COMPATIBLE_SERVICE_HANDLER;
 	}
 
 	_executeCommand(serviceName, command) {
 
-		if (!(command in _AVAILABLE_SERVICE_COMMANDS)) {
+		if (!_AVAILABLE_SERVICE_COMMANDS.includes(command)) {
 			throw Error(`Prohibited command=${command} called for service=${serviceName}`);
 		}
 

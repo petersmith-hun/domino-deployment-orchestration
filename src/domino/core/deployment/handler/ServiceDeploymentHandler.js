@@ -17,7 +17,9 @@ export default class ServiceDeploymentHandler extends AbstractFilesystemDeployme
 	 * @param registration AppRegistration object containing information about the application to be started
 	 */
 	start(registration) {
+		logger.info(`Starting application=${registration.appName} by OS service...`);
 		this._serviceAdapter.start(registration.execution.commandName);
+		logger.info(`Started application=${registration.appName}`);
 	}
 
 	/**
@@ -26,7 +28,9 @@ export default class ServiceDeploymentHandler extends AbstractFilesystemDeployme
 	 * @param registration AppRegistration object containing information about the application to be stopped
 	 */
 	stop(registration) {
+		logger.info(`Stopping application=${registration.appName} by OS service...`);
 		this._serviceAdapter.stop(registration.execution.commandName);
+		logger.info(`Stopped application=${registration.appName}`);
 	}
 
 	/**
@@ -35,6 +39,8 @@ export default class ServiceDeploymentHandler extends AbstractFilesystemDeployme
 	 * @param registration AppRegistration object containing information about the application to be restarted
 	 */
 	restart(registration) {
+		logger.info(`Restarting application=${registration.appName} by OS service...`);
 		this._serviceAdapter.restart(registration.execution.commandName);
+		logger.info(`Restarted application=${registration.appName}`);
 	}
 }

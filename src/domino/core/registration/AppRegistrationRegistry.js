@@ -12,8 +12,9 @@ const logger = logManager.createLogger("AppRegistrationRegistry");
  */
 export default class AppRegistrationRegistry {
 
-	constructor(registrationFactory, executorUserRegistry) {
+	constructor(registrationFactory, executorUserRegistry, runtimeRegistrationsFactory) {
 		this._registrationFactory = registrationFactory;
+		this._runtimeRegistrationsFactory = runtimeRegistrationsFactory;
 		this._registrationsConfigFile = config.get("domino.registrations-path");
 		this._registrations = null;
 		this._init();
@@ -33,7 +34,7 @@ export default class AppRegistrationRegistry {
 	 * Returns registration configuration for the given application name.
 	 *
 	 * @param appName name of the application for the configuration to be retrieved
-	 * @returns configuration registered for the given app, or throws error is it does not exist
+	 * @returns configuration registered for the given app, or throws error if it does not exist
 	 */
 	getRegistration(appName) {
 
@@ -44,13 +45,30 @@ export default class AppRegistrationRegistry {
 		return this._registrations.get(appName);
 	}
 
+	/**
+	 * Returns the registered runtime for the specified runtime name.
+	 *
+	 * @param runtimeName name of a registered runtime
+	 * @returns registered runtime, or throws error if it does not exist
+	 */
+	getRuntime(runtimeName) {
+
+		if (!Array.from(this._runtimes.keys()).includes(runtimeName)) {
+			throw new Error(`Requested runtime ${runtimeName} does not exist`);
+		}
+
+		return this._runtimes.get(runtimeName);
+	}
+
 	_init() {
 		logger.info(`Starting app registration with config file ${this._registrationsConfigFile}`);
 
 		let registrationConfig = this._readRegistrations();
 		this._registrations = this._registrationFactory.createRegistrations(registrationConfig);
+		this._runtimes = this._runtimeRegistrationsFactory.createRuntimeRegistrations(registrationConfig);
 
 		this._registrations.forEach((value, key) => logger.info(`Registered application ${key} with ${value.source.type} source`));
+		this._runtimes.forEach((value, key) => logger.info(`Runtime registered with name ${key}`));
 	}
 
 	_readRegistrations() {
