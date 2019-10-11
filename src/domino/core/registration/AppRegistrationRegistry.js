@@ -67,7 +67,7 @@ export default class AppRegistrationRegistry {
 		this._registrations = this._registrationFactory.createRegistrations(registrationConfig);
 		this._runtimes = this._runtimeRegistrationsFactory.createRuntimeRegistrations(registrationConfig);
 
-		this._registrations.forEach((value, key) => logger.info(`Registered application ${key} with ${value.source.type} source`));
+		this._registrations.forEach((value, key) => logger.info(`Registered application ${key} with ${value.source.type}/${value.execution.executionHandler} source`));
 		this._runtimes.forEach((value, key) => logger.info(`Runtime registered with name ${key}`));
 	}
 
