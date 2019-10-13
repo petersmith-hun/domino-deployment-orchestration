@@ -6,9 +6,10 @@ import multer from "multer";
  */
 export default class ExpressMulterFactory {
 
-	constructor(executableUtility, filenameUtility) {
+	constructor(executableUtility, filenameUtility, requestValidator) {
 		this._executableUtility = executableUtility;
 		this._filenameUtility = filenameUtility;
+		this._requestValidator = requestValidator;
 		this._storageConfig = config.get("domino.storage");
 	}
 
@@ -20,7 +21,7 @@ export default class ExpressMulterFactory {
 	createExpressMulter() {
 		return multer({
 			storage: this._configureStorage(this._storageConfig, this._filenameUtility),
-			fileFilter: this._configureFileFilter(this._executableUtility),
+			fileFilter: this._configureFileFilter(this._executableUtility, this._requestValidator),
 			limits: this._configureLimits()
 		});
 	}
@@ -35,9 +36,10 @@ export default class ExpressMulterFactory {
 		});
 	}
 
-	_configureFileFilter(executableUtility) {
+	_configureFileFilter(executableUtility, requestValidator) {
 		return function (req, file, cb) {
 			try {
+				requestValidator.assertValidDeploymentRequest(req.params);
 				executableUtility.assertAcceptedMime(file);
 				executableUtility.assertRegisteredApp(file, req.params);
 				executableUtility.assertNonExistingExecutable(file, req.params);

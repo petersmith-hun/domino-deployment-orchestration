@@ -100,8 +100,12 @@ services:
     class: 'domino/web/factory/ExpressMulterFactory'
     arguments: [
       '@web.component.exec-utility',
-      '@core.component.utility.filename'
+      '@core.component.utility.filename',
+      '@web.component.request-validator'
     ]
+
+  web.component.request-validator:
+    class: 'domino/web/util/RequestValidator'
 
   web.component.exec-utility:
     class: 'domino/web/util/ExecutableUtility'

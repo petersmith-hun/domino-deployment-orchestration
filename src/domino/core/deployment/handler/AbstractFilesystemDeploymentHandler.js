@@ -6,7 +6,7 @@ import logManager from "../../../../domino_main";
 
 const logger = logManager.createLogger("AbstractFilesystemDeploymentHandler");
 
-const DEFAULT_EXECUTION_PERMISSION = 0o744;
+const DEFAULT_EXECUTION_PERMISSION = 0o774;
 
 /**
  * Common (abstract) AbstractDeploymentHandler implementation that handles deployment phase of an application for

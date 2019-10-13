@@ -18,6 +18,7 @@ module.exports = {
 			// --inspect-brk to wait for attach
 			"--inspect=0.0.0.0:7099"
 		],
-		max_restarts: 1
+		max_restarts: 1,
+		treekill: false
 	}]
 };

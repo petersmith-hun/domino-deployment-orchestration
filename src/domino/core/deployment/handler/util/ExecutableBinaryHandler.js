@@ -27,7 +27,8 @@ export default class ExecutableBinaryHandler {
 		return proc.spawn(spawnParameters.executablePath, spawnParameters.args, {
 			uid: spawnParameters.userID,
 			cwd: spawnParameters.workDirectory,
-			detached: true
+			detached: true,
+			stdio: "ignore"
 		});
 	}
 
@@ -69,7 +70,12 @@ export default class ExecutableBinaryHandler {
 	}
 
 	_killProcessGroup(parentPID) {
-		process.kill(-parentPID);
-		logger.info(`Kill signal sent to the process group of PID=${parentPID}`);
+
+		try {
+			process.kill(-parentPID);
+			logger.info(`Kill signal sent to the process group of PID=${parentPID}`);
+		} catch (e) {
+			logger.error(`Failed to kill process of PID=${parentPID} - reason='${e.message}'`);
+		}
 	}
 }
