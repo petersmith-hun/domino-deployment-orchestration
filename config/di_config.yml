@@ -17,13 +17,75 @@ services:
   core.component.registrations.factory:
     class: 'domino/core/registration/AppRegistrationsFactory'
 
+  core.component.runtimes.factory:
+    class: 'domino/core/registration/RuntimeRegistrationsFactory'
+
   core.component.registrations.registry:
     class: 'domino/core/registration/AppRegistrationRegistry'
-    arguments: ['@core.component.registrations.factory']
+    arguments: [
+      '@core.component.registrations.factory',
+      '@core.component.registrations.execuser',
+      '@core.component.runtimes.factory'
+    ]
+
+  core.component.registrations.execuser:
+    class: 'domino/core/registration/ExecutorUserRegistry'
+
+  core.component.deployment.handler.registry:
+    class: 'domino/core/deployment/DeploymentHandlerRegistry'
+    arguments: [
+      '@core.component.deployment.handler.fs-executable',
+      '@core.component.deployment.handler.fs-runtime',
+      '@core.component.deployment.handler.fs-service'
+    ]
+
+  core.component.utility.filename:
+    class: 'domino/core/util/FilenameUtility'
+
+  core.component.utility.exec-binary-handler:
+    class: 'domino/core/deployment/handler/util/ExecutableBinaryHandler'
+
+  core.component.deployment.handler.fs-executable:
+    class: 'domino/core/deployment/handler/ExecutableDeploymentHandler'
+    arguments: [
+      '@core.component.utility.filename',
+      '@core.component.registrations.execuser',
+      '@core.component.utility.exec-binary-handler'
+    ]
+
+  core.component.deployment.handler.fs-runtime:
+    class: 'domino/core/deployment/handler/RuntimeDeploymentHandler'
+    arguments: [
+      '@core.component.utility.filename',
+      '@core.component.registrations.execuser',
+      '@core.component.utility.exec-binary-handler',
+      '@core.component.registrations.registry'
+    ]
+
+  core.component.deployment.handler.fs-service:
+    class: 'domino/core/deployment/handler/ServiceDeploymentHandler'
+    arguments: [
+      '@core.component.utility.filename',
+      '@core.component.registrations.execuser',
+      '@core.component.svc-adapter.registry'
+    ]
+
+  core.component.svc-adapter.systemd:
+    class: 'domino/core/deployment/handler/service/SystemdServiceAdapter'
+
+  core.component.svc-adapter.registry:
+    class: 'domino/core/deployment/handler/service/ServiceAdapterRegistry'
+    arguments: [
+      '@core.component.svc-adapter.systemd'
+    ]
 
   # services
   core.service.deployment:
     class: 'domino/core/service/DeploymentService'
+    arguments: [
+      '@core.component.registrations.registry',
+      '@core.component.deployment.handler.registry'
+    ]
 
   # web layer
   # components
@@ -36,11 +98,21 @@ services:
 
   web.component.factory.multer:
     class: 'domino/web/factory/ExpressMulterFactory'
-    arguments: ['@web.component.exec-utility']
+    arguments: [
+      '@web.component.exec-utility',
+      '@core.component.utility.filename',
+      '@web.component.request-validator'
+    ]
+
+  web.component.request-validator:
+    class: 'domino/web/util/RequestValidator'
 
   web.component.exec-utility:
     class: 'domino/web/util/ExecutableUtility'
-    arguments: ['@core.component.registrations.registry']
+    arguments: [
+      '@core.component.registrations.registry',
+      '@core.component.utility.filename'
+    ]
 
   # controllers
   web.controller.upload:

@@ -1,6 +1,8 @@
 .idea
+docker/config/
 node_modules/
 logs/
 storage/
 *.iml
 domino-registrations.yml
+*.sh

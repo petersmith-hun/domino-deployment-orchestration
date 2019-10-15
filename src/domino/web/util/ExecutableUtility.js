@@ -13,9 +13,10 @@ const logger = logManager.createLogger("ExecutableUtility");
  */
 export default class ExecutableUtility {
 
-	constructor(appRegistrationRegistry) {
+	constructor(appRegistrationRegistry, filenameUtility) {
 		this._appRegistrationRegistry = appRegistrationRegistry;
 		this._storageConfig = config.get("domino.storage");
+		this._filenameUtility = filenameUtility;
 	}
 
 	/**
@@ -76,8 +77,11 @@ export default class ExecutableUtility {
 	 */
 	exists(file, requestParams) {
 
-		let filename = this.createFilename(file, requestParams);
-		let executablePath = path.join(this._storageConfig.path, filename);
+		const filename = this._filenameUtility.createFilename({
+			originalname: file.originalname,
+			app: requestParams.app,
+			version: requestParams.version});
+		const executablePath = path.join(this._storageConfig.path, filename);
 
 		return fs.existsSync(executablePath);
 	}
@@ -95,20 +99,5 @@ export default class ExecutableUtility {
 			logger.error(`File with originalName=${file.originalname} for app=${requestParams.app} with version=${requestParams.version} already exists - rejecting upload`);
 			throw new AlreadyExistingExecutableError();
 		}
-	}
-
-	/**
-	 * Forms a proper filename which the executable will be stored with.
-	 *
-	 * @param file file object (originalname field must be existing)
-	 * @param requestParams parameter map object (app and version fields must be existing)
-	 * @returns {string} created filename
-	 */
-	createFilename(file, requestParams) {
-
-		let filenameParts = file.originalname.split('.');
-		let extension = filenameParts[filenameParts.length - 1];
-
-		return `executable-${requestParams.app}-v${requestParams.version}.${extension}`;
 	}
 }

@@ -13,8 +13,8 @@ export default class AppRegistrationsFactory {
 	 */
 	createRegistrations(yamlSourceDocument) {
 
-		let registrationsNode = yamlSourceDocument["domino"]["registrations"];
-		let registrations = registrationsNode
+		const registrationsNode = yamlSourceDocument["domino"]["registrations"];
+		const registrations = registrationsNode
 			.map(this._createAppRegistration)
 			.map(registration => [registration.appName, registration]);
 
