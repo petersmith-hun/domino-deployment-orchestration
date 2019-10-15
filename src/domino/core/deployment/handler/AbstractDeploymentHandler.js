@@ -1,8 +1,17 @@
+import config from "config";
+import logManager from "../../../../domino_main";
+
+const logger = logManager.createLogger("AbstractDeploymentHandler");
+
 /**
  * Base (abstract) deployment handler component (every method throws Error, so they must be overridden).
  * Implementations should handle the deployment lifecycle of an application accordingly to how they should be treated based on the registration information.
  */
 export default class AbstractDeploymentHandler {
+
+	constructor() {
+		this._startTimeout = config.get("domino.start-timeout");
+	}
 
 	/**
 	 * Deploys the application specified by the passed registration object with the given version.
@@ -40,6 +49,7 @@ export default class AbstractDeploymentHandler {
 	 */
 	restart(registration) {
 		this.stop(registration);
-		setTimeout(() => this.start(registration), 3000);
+		logger.info(`Waiting for the application to stop... Continuing after ${this._startTimeout} ms`);
+		setTimeout(() => this.start(registration), this._startTimeout);
 	}
 }

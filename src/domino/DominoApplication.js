@@ -20,8 +20,8 @@ export default class DominoApplication {
 	 * Runs Domino by starting up the application server.
 	 */
 	run() {
-		let port = this._serverConfig.get('port');
-		let host = this._serverConfig.get('host');
+		const port = this._serverConfig.get('port');
+		const host = this._serverConfig.get('host');
 
 		this._registrations.registerRoutes(this._express);
 

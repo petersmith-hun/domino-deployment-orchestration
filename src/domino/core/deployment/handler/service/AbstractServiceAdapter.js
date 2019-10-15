@@ -1,6 +1,6 @@
 /**
  * Abstract base class for OS service calls.
- * Implementations should handle a specific kind of service executor based on the used OS.
+ * Every implementation should handle a specific kind of service executor based on the used OS.
  */
 export default class AbstractServiceAdapter {
 

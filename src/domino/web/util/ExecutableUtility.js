@@ -77,11 +77,11 @@ export default class ExecutableUtility {
 	 */
 	exists(file, requestParams) {
 
-		let filename = this._filenameUtility.createFilename({
+		const filename = this._filenameUtility.createFilename({
 			originalname: file.originalname,
 			app: requestParams.app,
 			version: requestParams.version});
-		let executablePath = path.join(this._storageConfig.path, filename);
+		const executablePath = path.join(this._storageConfig.path, filename);
 
 		return fs.existsSync(executablePath);
 	}

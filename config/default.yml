@@ -11,3 +11,4 @@ domino:
     host: localhost
     port: 9987
   service-handler: systemd
+  start-timeout: 3000

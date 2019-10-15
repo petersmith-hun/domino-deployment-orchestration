@@ -11,8 +11,8 @@ export default class FilenameUtility {
 	 */
 	createFilename(parameters) {
 
-		let filenameParts = parameters.originalname.split('.');
-		let extension = filenameParts[filenameParts.length - 1];
+		const filenameParts = parameters.originalname.split('.');
+		const extension = filenameParts[filenameParts.length - 1];
 
 		return `executable-${parameters.app}-v${parameters.version}.${extension}`;
 	}

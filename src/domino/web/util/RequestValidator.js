@@ -34,7 +34,8 @@ export default class RequestValidator {
 	 * For more information please see isDeploymentRequestValid method.
 	 *
 	 * @see RequestValidator#isDeploymentRequestValid
-	 * @param requestParams
+	 * @param requestParams HTTP request parameters
+	 * @throws InvalidRequestError if the provided HTTP request is invalid
 	 */
 	assertValidDeploymentRequest(requestParams) {
 

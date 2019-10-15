@@ -15,10 +15,7 @@ export default class DeploymentService {
 	 * @param version version of the application to be deployed
 	 */
 	deploy(app, version) {
-		let registration = this._getRegistration(app);
-		this._deploymentHandlerRegistry
-			.getHandler(registration)
-			.deploy(registration, version);
+		this._executeOperation(app, (handler, registration) => handler.deploy(registration, version));
 	}
 
 	/**
@@ -27,10 +24,7 @@ export default class DeploymentService {
 	 * @param app application to be started
 	 */
 	start(app) {
-		let registration = this._getRegistration(app);
-		this._deploymentHandlerRegistry
-			.getHandler(registration)
-			.start(registration);
+		this._executeOperation(app, (handler, registration) => handler.start(registration));
 	}
 
 	/**
@@ -39,10 +33,7 @@ export default class DeploymentService {
 	 * @param app application to be stopped
 	 */
 	stop(app) {
-		let registration = this._getRegistration(app);
-		this._deploymentHandlerRegistry
-			.getHandler(registration)
-			.stop(registration);
+		this._executeOperation(app, (handler, registration) => handler.stop(registration));
 	}
 
 	/**
@@ -51,10 +42,16 @@ export default class DeploymentService {
 	 * @param app application to be restarted
 	 */
 	restart(app) {
-		let registration = this._getRegistration(app);
-		this._deploymentHandlerRegistry
-			.getHandler(registration)
-			.restart(registration);
+		this._executeOperation(app, (handler, registration) => handler.restart(registration));
+	}
+
+	_executeOperation(app, operation) {
+
+		const registration = this._getRegistration(app);
+		const handler = this._deploymentHandlerRegistry
+			.getHandler(registration);
+
+		operation(handler, registration);
 	}
 
 	_getRegistration(app) {
