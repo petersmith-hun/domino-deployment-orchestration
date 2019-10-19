@@ -7,8 +7,8 @@ import AbstractSpawningDeploymentHandler from "./AbstractSpawningDeploymentHandl
  */
 export default class ExecutableDeploymentHandler extends AbstractSpawningDeploymentHandler {
 
-	constructor(filenameUtility, executorUserRegistry, executableBinaryHandler) {
-		super(filenameUtility, executorUserRegistry, executableBinaryHandler);
+	constructor(filenameUtility, executorUserRegistry, executableBinaryHandler, configurationProvider) {
+		super(filenameUtility, executorUserRegistry, executableBinaryHandler, configurationProvider);
 	}
 
 	_prepareSpawnParameters(registration) {

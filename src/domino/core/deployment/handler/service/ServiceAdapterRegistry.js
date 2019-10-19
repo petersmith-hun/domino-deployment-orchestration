@@ -1,4 +1,3 @@
-import config from "config";
 import logManager from "../../../../../domino_main";
 
 const logger = logManager.createLogger('ServiceAdapterRegistry');
@@ -11,9 +10,9 @@ const logger = logManager.createLogger('ServiceAdapterRegistry');
  */
 export default class ServiceAdapterRegistry {
 
-	constructor(...serviceAdapterList) {
+	constructor(configurationProvider, ...serviceAdapterList) {
 
-		this._serviceHandler = config.get("domino.service-handler");
+		this._serviceHandler = configurationProvider.getServiceHandler();
 		this._init(serviceAdapterList);
 	}
 

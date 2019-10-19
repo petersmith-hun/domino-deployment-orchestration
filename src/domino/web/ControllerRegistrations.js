@@ -1,16 +1,15 @@
 import WebErrorHandlers from "./error/handler/WebErrorHandlers";
-import config from "config";
 
 /**
  * Component to handle controller registrations.
  */
 export default class ControllerRegistrations {
 
-	constructor(multerFactory, uploadController, lifecycleController) {
+	constructor(multerFactory, uploadController, lifecycleController, configurationProvider) {
 		this._multer = multerFactory.createExpressMulter();
 		this._uploadController = uploadController;
 		this._lifecycleController = lifecycleController;
-		this._storageConfig = config.get("domino.storage");
+		this._storageConfig = configurationProvider.getStorageConfiguration();
 	}
 
 	/**

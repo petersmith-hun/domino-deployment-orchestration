@@ -1,5 +1,4 @@
 import AbstractDeploymentHandler from "./AbstractDeploymentHandler";
-import config from "config";
 import fs from "fs";
 import path from "path";
 import logManager from "../../../../domino_main";
@@ -15,11 +14,11 @@ const DEFAULT_EXECUTION_PERMISSION = 0o774;
  */
 export default class AbstractFilesystemDeploymentHandler extends AbstractDeploymentHandler {
 
-	constructor(filenameUtility, executorUserRegistry) {
-		super();
+	constructor(filenameUtility, executorUserRegistry, configurationProvider) {
+		super(configurationProvider);
 		this._filenameUtility = filenameUtility;
 		this._executorUserRegistry = executorUserRegistry;
-		this._storageConfig = config.get("domino.storage");
+		this._storageConfig = configurationProvider.getStorageConfiguration();
 	}
 
 	/**

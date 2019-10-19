@@ -1,4 +1,3 @@
-import config from "config";
 import fs from "fs";
 import path from "path";
 import logManager from "../../../domino_main";
@@ -14,9 +13,9 @@ const logger = logManager.createLogger("ExecutableUtility");
  */
 export default class ExecutableUtility {
 
-	constructor(appRegistrationRegistry, filenameUtility) {
+	constructor(appRegistrationRegistry, filenameUtility, configurationProvider) {
 		this._appRegistrationRegistry = appRegistrationRegistry;
-		this._storageConfig = config.get("domino.storage");
+		this._storageConfig = configurationProvider.getStorageConfiguration();
 		this._filenameUtility = filenameUtility;
 	}
 

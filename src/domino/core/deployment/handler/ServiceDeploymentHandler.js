@@ -9,8 +9,8 @@ const logger = logManager.createLogger("ServiceDeploymentHandler");
  */
 export default class ServiceDeploymentHandler extends AbstractFilesystemDeploymentHandler {
 
-	constructor(filenameUtility, executorUserRegistry, serviceAdapterRegistry) {
-		super(filenameUtility, executorUserRegistry);
+	constructor(filenameUtility, executorUserRegistry, serviceAdapterRegistry, configurationProvider) {
+		super(filenameUtility, executorUserRegistry, configurationProvider);
 		this._serviceAdapter = serviceAdapterRegistry.getServiceAdapter();
 	}
 

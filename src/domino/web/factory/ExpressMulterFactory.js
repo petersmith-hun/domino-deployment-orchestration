@@ -1,4 +1,3 @@
-import config from "config";
 import multer from "multer";
 import ExecutableVersion from "../../core/domain/ExecutableVersion";
 
@@ -7,11 +6,11 @@ import ExecutableVersion from "../../core/domain/ExecutableVersion";
  */
 export default class ExpressMulterFactory {
 
-	constructor(executableUtility, filenameUtility, requestValidator) {
+	constructor(executableUtility, filenameUtility, requestValidator, configurationProvider) {
 		this._executableUtility = executableUtility;
 		this._filenameUtility = filenameUtility;
 		this._requestValidator = requestValidator;
-		this._storageConfig = config.get("domino.storage");
+		this._storageConfig = configurationProvider.getStorageConfiguration();
 	}
 
 	/**

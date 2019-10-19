@@ -1,4 +1,3 @@
-import config from "config";
 import fs from "fs";
 import ExecutableVersion from "../domain/ExecutableVersion";
 
@@ -11,8 +10,8 @@ const _DEFAULT_VERSION = null;
  */
 export default class ExecutableVersionUtility {
 
-	constructor() {
-		this._storageConfig = config.get("domino.storage");
+	constructor(configurationProvider) {
+		this._storageConfig = configurationProvider.getStorageConfiguration();
 	}
 
 	/**

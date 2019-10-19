@@ -1,4 +1,3 @@
-import config from "config";
 import logManager from "../../../domino_main";
 import yaml from "js-yaml";
 import fs from "fs";
@@ -12,10 +11,10 @@ const logger = logManager.createLogger("AppRegistrationRegistry");
  */
 export default class AppRegistrationRegistry {
 
-	constructor(registrationFactory, executorUserRegistry, runtimeRegistrationsFactory) {
+	constructor(registrationFactory, executorUserRegistry, runtimeRegistrationsFactory, configurationProvider) {
 		this._registrationFactory = registrationFactory;
 		this._runtimeRegistrationsFactory = runtimeRegistrationsFactory;
-		this._registrationsConfigFile = config.get("domino.registrations-path");
+		this._registrationsConfigFile = configurationProvider.getRegistrationsFilePath();
 		this._registrations = null;
 		this._init();
 		executorUserRegistry.registerExecutorUsers(this._registrations);

@@ -5,7 +5,8 @@ services:
     class: 'domino/DominoApplication'
     arguments: [
       '@web.component.registrations',
-      '@app.express'
+      '@app.express',
+      '@core.component.config-provider'
     ]
   app.express:
     factory:
@@ -14,6 +15,9 @@ services:
 
   # core layer
   # components
+  core.component.config-provider:
+    class: 'domino/core/config/ConfigurationProvider'
+
   core.component.registrations.factory:
     class: 'domino/core/registration/AppRegistrationsFactory'
 
@@ -25,7 +29,8 @@ services:
     arguments: [
       '@core.component.registrations.factory',
       '@core.component.registrations.execuser',
-      '@core.component.runtimes.factory'
+      '@core.component.runtimes.factory',
+      '@core.component.config-provider'
     ]
 
   core.component.registrations.execuser:
@@ -41,6 +46,9 @@ services:
 
   core.component.utility.executable-version:
     class: 'domino/core/util/ExecutableVersionUtility'
+    arguments: [
+      '@core.component.config-provider'
+    ]
 
   core.component.utility.filename:
     class: 'domino/core/util/FilenameUtility'
@@ -53,7 +61,8 @@ services:
     arguments: [
       '@core.component.utility.filename',
       '@core.component.registrations.execuser',
-      '@core.component.utility.exec-binary-handler'
+      '@core.component.utility.exec-binary-handler',
+      '@core.component.config-provider'
     ]
 
   core.component.deployment.handler.fs-runtime:
@@ -62,7 +71,8 @@ services:
       '@core.component.utility.filename',
       '@core.component.registrations.execuser',
       '@core.component.utility.exec-binary-handler',
-      '@core.component.registrations.registry'
+      '@core.component.registrations.registry',
+      '@core.component.config-provider'
     ]
 
   core.component.deployment.handler.fs-service:
@@ -70,7 +80,8 @@ services:
     arguments: [
       '@core.component.utility.filename',
       '@core.component.registrations.execuser',
-      '@core.component.svc-adapter.registry'
+      '@core.component.svc-adapter.registry',
+      '@core.component.config-provider'
     ]
 
   core.component.svc-adapter.systemd:
@@ -79,6 +90,7 @@ services:
   core.component.svc-adapter.registry:
     class: 'domino/core/deployment/handler/service/ServiceAdapterRegistry'
     arguments: [
+      '@core.component.config-provider',
       '@core.component.svc-adapter.systemd'
     ]
 
@@ -98,7 +110,8 @@ services:
     arguments: [
       '@web.component.factory.multer',
       '@web.controller.upload',
-      '@web.controller.lifecycle'
+      '@web.controller.lifecycle',
+      '@core.component.config-provider'
     ]
 
   web.component.factory.multer:
@@ -106,7 +119,8 @@ services:
     arguments: [
       '@web.component.exec-utility',
       '@core.component.utility.filename',
-      '@web.component.request-validator'
+      '@web.component.request-validator',
+      '@core.component.config-provider'
     ]
 
   web.component.request-validator:
@@ -116,13 +130,16 @@ services:
     class: 'domino/web/util/ExecutableUtility'
     arguments: [
       '@core.component.registrations.registry',
-      '@core.component.utility.filename'
+      '@core.component.utility.filename',
+      '@core.component.config-provider'
     ]
 
   # controllers
   web.controller.upload:
     class: 'domino/web/controller/UploadController'
-    arguments: ['@core.service.deployment']
+    arguments: [
+      '@core.service.deployment'
+    ]
 
   web.controller.lifecycle:
     class: 'domino/web/controller/LifecycleController'
