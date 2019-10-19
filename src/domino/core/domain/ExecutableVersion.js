@@ -7,7 +7,7 @@ const _TO_STRING_PART_SEPARATOR = "-";
 
 /**
  * Wrapper class for handling executable versions.
- * The given version is string is split (at the dot characters) to (at most) four parts - major, minor, patch and build version number.
+ * The given version string is split (at the dot, dash and underscore characters) to (at most) four parts - major, minor, patch and build version number.
  */
 export default class ExecutableVersion {
 
@@ -24,8 +24,8 @@ export default class ExecutableVersion {
 	}
 
 	/**
-	 * Compares this instance of the ExecutableVersion to the given.
-	 * Returns standard comparision result values:
+	 * Compares this instance of the ExecutableVersion to the given one.
+	 * Returns standard comparison result values:
 	 *  - this > other   ->  1
 	 *  - this < other   -> -1
 	 *  - this == other  ->  0

@@ -46,7 +46,7 @@ export default class RequestValidator {
 
 	/**
 	 * Asserts that the given deployment request is valid.
-	 * For more information please see isDeploymentRequestValid method.
+	 * For more information please see RequestValidator#isUploadRequestValid method.
 	 *
 	 * @see RequestValidator#isUploadRequestValid
 	 * @param requestParams HTTP request parameters

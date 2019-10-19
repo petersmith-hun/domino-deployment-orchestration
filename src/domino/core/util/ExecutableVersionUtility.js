@@ -15,10 +15,10 @@ export default class ExecutableVersionUtility {
 	}
 
 	/**
-	 * Find the latest stored version of the given application.
+	 * Finds the latest stored version of the given application.
 	 *
 	 * @param app name of the application (as registered) to find latest version of
-	 * @returns {*} latest version (as original version string
+	 * @returns {*} latest version as ExecutableVersion object or null if no version can be found/extracted
 	 */
 	findLatestVersion(app) {
 

@@ -16,8 +16,8 @@ export default class LifecycleController extends BaseController {
 
 	/**
 	 * PUT /lifecycle/:app/deploy[/:version]
-	 * Prepares given application for execution by copying its executable to the application's home directory.
-	 * Omitting version path parameter causes Domino to select the latest available version.
+	 * Prepares given application for execution.
+	 * Omitting version path parameter instructs Domino to select the latest available version.
 	 *
 	 * @param req Express request object
 	 * @param resp Express response object
