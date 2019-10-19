@@ -1,15 +1,15 @@
 import WebErrorHandlers from "./error/handler/WebErrorHandlers";
-import config from "config";
 
 /**
  * Component to handle controller registrations.
  */
 export default class ControllerRegistrations {
 
-	constructor(multerFactory, uploadController) {
+	constructor(multerFactory, uploadController, lifecycleController, configurationProvider) {
 		this._multer = multerFactory.createExpressMulter();
 		this._uploadController = uploadController;
-		this._storageConfig = config.get("domino.storage");
+		this._lifecycleController = lifecycleController;
+		this._storageConfig = configurationProvider.getStorageConfiguration();
 	}
 
 	/**
@@ -32,5 +32,13 @@ export default class ControllerRegistrations {
 					(req, resp) => this._uploadController.uploadExecutable(req, resp))
 				.use(WebErrorHandlers.uploadErrorHandler);
 		}
+
+		expressApp
+			.put("/lifecycle/:app/deploy", (req, resp) => this._lifecycleController.deploy(req, resp))
+			.put("/lifecycle/:app/deploy/:version", (req, resp) => this._lifecycleController.deploy(req, resp))
+			.put("/lifecycle/:app/start", (req, resp) => this._lifecycleController.start(req, resp))
+			.put("/lifecycle/:app/restart", (req, resp) => this._lifecycleController.restart(req, resp))
+			.delete("/lifecycle/:app/stop", (req, resp) => this._lifecycleController.stop(req, resp))
+			.use(WebErrorHandlers.uploadErrorHandler);
 	}
 }

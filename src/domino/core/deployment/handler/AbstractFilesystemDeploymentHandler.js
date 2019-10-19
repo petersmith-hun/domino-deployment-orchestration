@@ -1,8 +1,8 @@
 import AbstractDeploymentHandler from "./AbstractDeploymentHandler";
-import config from "config";
 import fs from "fs";
 import path from "path";
 import logManager from "../../../../domino_main";
+import NonExistingExecutableError from "../../error/NonExistingExecutableError";
 
 const logger = logManager.createLogger("AbstractFilesystemDeploymentHandler");
 
@@ -14,11 +14,11 @@ const DEFAULT_EXECUTION_PERMISSION = 0o774;
  */
 export default class AbstractFilesystemDeploymentHandler extends AbstractDeploymentHandler {
 
-	constructor(filenameUtility, executorUserRegistry) {
-		super();
+	constructor(filenameUtility, executorUserRegistry, configurationProvider) {
+		super(configurationProvider);
 		this._filenameUtility = filenameUtility;
 		this._executorUserRegistry = executorUserRegistry;
-		this._storageConfig = config.get("domino.storage");
+		this._storageConfig = configurationProvider.getStorageConfiguration();
 	}
 
 	/**
@@ -29,7 +29,7 @@ export default class AbstractFilesystemDeploymentHandler extends AbstractDeploym
 	 */
 	deploy(registration, version) {
 
-		logger.info(`Deploying app=${registration.appName} with version=${version}...`);
+		logger.info(`Deploying app=${registration.appName} with version=${version.getFormattedVersion()}...`);
 
 		const storedFilename = this._prepareStoredFilename(registration, version);
 		const source = this._prepareSourcePath(storedFilename);
@@ -54,7 +54,14 @@ export default class AbstractFilesystemDeploymentHandler extends AbstractDeploym
 	}
 
 	_prepareSourcePath(storedFilename) {
-		return path.join(this._storageConfig.path, storedFilename);
+
+		const sourcePath = path.join(this._storageConfig.path, storedFilename);
+		if (!fs.existsSync(sourcePath)) {
+			logger.error(`File=${storedFilename} does not exist - deployment failed.`);
+			throw new NonExistingExecutableError();
+		}
+
+		return sourcePath;
 	}
 
 	_prepareTargetPath(registration) {

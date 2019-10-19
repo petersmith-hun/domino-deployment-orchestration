@@ -1,10 +1,10 @@
-import config from "config";
 import fs from "fs";
 import path from "path";
 import logManager from "../../../domino_main";
 import NonAcceptableMimeTypeError from "../error/NonAcceptableMimeTypeError";
 import NonRegisteredAppError from "../error/NonRegisteredAppError";
 import AlreadyExistingExecutableError from "../error/AlreadyExistingExecutableError";
+import ExecutableVersion from "../../core/domain/ExecutableVersion";
 
 const logger = logManager.createLogger("ExecutableUtility");
 
@@ -13,9 +13,9 @@ const logger = logManager.createLogger("ExecutableUtility");
  */
 export default class ExecutableUtility {
 
-	constructor(appRegistrationRegistry, filenameUtility) {
+	constructor(appRegistrationRegistry, filenameUtility, configurationProvider) {
 		this._appRegistrationRegistry = appRegistrationRegistry;
-		this._storageConfig = config.get("domino.storage");
+		this._storageConfig = configurationProvider.getStorageConfiguration();
 		this._filenameUtility = filenameUtility;
 	}
 
@@ -80,7 +80,7 @@ export default class ExecutableUtility {
 		const filename = this._filenameUtility.createFilename({
 			originalname: file.originalname,
 			app: requestParams.app,
-			version: requestParams.version});
+			version: new ExecutableVersion(requestParams.version)});
 		const executablePath = path.join(this._storageConfig.path, filename);
 
 		return fs.existsSync(executablePath);

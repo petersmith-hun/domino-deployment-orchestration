@@ -7,8 +7,8 @@ import AbstractSpawningDeploymentHandler from "./AbstractSpawningDeploymentHandl
  */
 export default class RuntimeDeploymentHandler extends AbstractSpawningDeploymentHandler {
 
-	constructor(filenameUtility, executorUserRegistry, executableBinaryHandler, appRegistrationRegistry) {
-		super(filenameUtility, executorUserRegistry, executableBinaryHandler);
+	constructor(filenameUtility, executorUserRegistry, executableBinaryHandler, appRegistrationRegistry, configurationProvider) {
+		super(filenameUtility, executorUserRegistry, executableBinaryHandler, configurationProvider);
 		this._appRegistrationRegistry = appRegistrationRegistry;
 	}
 

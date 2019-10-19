@@ -11,8 +11,8 @@ const logger = logManager.createLogger("AbstractSpawningDeploymentHandler");
  */
 export default class AbstractSpawningDeploymentHandler extends AbstractFilesystemDeploymentHandler{
 
-	constructor(filenameUtility, executorUserRegistry, executableBinaryHandler) {
-		super(filenameUtility, executorUserRegistry);
+	constructor(filenameUtility, executorUserRegistry, executableBinaryHandler, configurationProvider) {
+		super(filenameUtility, executorUserRegistry, configurationProvider);
 		this._executableBinaryHandler = executableBinaryHandler;
 		this._processes = [];
 	}
@@ -47,6 +47,7 @@ export default class AbstractSpawningDeploymentHandler extends AbstractFilesyste
 
 		logger.info(`Stopping application=${registration.appName}...`);
 		this._executableBinaryHandler.killProcess(this._processes[registration.appName], registration);
+		this._processes[registration.appName] = null;
 	}
 
 	/**

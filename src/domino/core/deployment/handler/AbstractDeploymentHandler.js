@@ -1,4 +1,3 @@
-import config from "config";
 import logManager from "../../../../domino_main";
 
 const logger = logManager.createLogger("AbstractDeploymentHandler");
@@ -9,8 +8,8 @@ const logger = logManager.createLogger("AbstractDeploymentHandler");
  */
 export default class AbstractDeploymentHandler {
 
-	constructor() {
-		this._startTimeout = config.get("domino.start-timeout");
+	constructor(configurationProvider) {
+		this._startTimeout = configurationProvider.getStartTimeout();
 	}
 
 	/**

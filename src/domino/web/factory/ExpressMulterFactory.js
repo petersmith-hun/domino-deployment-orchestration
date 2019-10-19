@@ -1,16 +1,16 @@
-import config from "config";
 import multer from "multer";
+import ExecutableVersion from "../../core/domain/ExecutableVersion";
 
 /**
  * Factory that creates a Multer multipart/form-data handler middleware for Express.
  */
 export default class ExpressMulterFactory {
 
-	constructor(executableUtility, filenameUtility, requestValidator) {
+	constructor(executableUtility, filenameUtility, requestValidator, configurationProvider) {
 		this._executableUtility = executableUtility;
 		this._filenameUtility = filenameUtility;
 		this._requestValidator = requestValidator;
-		this._storageConfig = config.get("domino.storage");
+		this._storageConfig = configurationProvider.getStorageConfiguration();
 	}
 
 	/**
@@ -32,7 +32,7 @@ export default class ExpressMulterFactory {
 			filename: (req, file, cb) => cb(null, filenameUtility.createFilename({
 				originalname: file.originalname,
 				app: req.params.app,
-				version: req.params.version}))
+				version: new ExecutableVersion(req.params.version)}))
 		});
 	}
 

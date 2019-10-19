@@ -1,5 +1,5 @@
 import {ContainerBuilder, YamlFileLoader} from "node-dependency-injection";
-import path from 'path';
+import path from "path";
 import SimpleLogger from "simple-node-logger";
 import config from "config";
 
@@ -18,8 +18,8 @@ export default logManager;
 // create IoC container
 let container = new ContainerBuilder(true, path.join(__dirname));
 let loader = new YamlFileLoader(container);
-loader.load('./config/di_config.yml');
+loader.load("./config/di_config.yml");
 container.compile();
 
 // start app
-container.get('app.main').run();
+container.get("app.main").run();
