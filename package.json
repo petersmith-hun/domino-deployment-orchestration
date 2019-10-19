@@ -4,7 +4,7 @@
   "description": "Deployment Orchestration for Minor Infrastructures, powered by Node.js",
   "main": "src/domino_esm_start.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --require babel-core/register test/**/*.js",
     "start": "node src/domino_esm_start.js"
   },
   "keywords": [],
@@ -20,5 +20,12 @@
     "node-dependency-injection": "^2.3.5",
     "process-list": "^1.2.3",
     "simple-node-logger": "^18.12.23"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
+    "chai": "^4.2.0",
+    "mocha": "^6.2.2"
   }
 }

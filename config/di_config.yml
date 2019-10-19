@@ -39,6 +39,9 @@ services:
       '@core.component.deployment.handler.fs-service'
     ]
 
+  core.component.utility.executable-version:
+    class: 'domino/core/util/ExecutableVersionUtility'
+
   core.component.utility.filename:
     class: 'domino/core/util/FilenameUtility'
 
@@ -84,7 +87,8 @@ services:
     class: 'domino/core/service/DeploymentService'
     arguments: [
       '@core.component.registrations.registry',
-      '@core.component.deployment.handler.registry'
+      '@core.component.deployment.handler.registry',
+      '@core.component.utility.executable-version'
     ]
 
   # web layer

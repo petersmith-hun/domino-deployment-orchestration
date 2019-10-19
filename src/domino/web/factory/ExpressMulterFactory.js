@@ -1,5 +1,6 @@
 import config from "config";
 import multer from "multer";
+import ExecutableVersion from "../../core/domain/ExecutableVersion";
 
 /**
  * Factory that creates a Multer multipart/form-data handler middleware for Express.
@@ -32,7 +33,7 @@ export default class ExpressMulterFactory {
 			filename: (req, file, cb) => cb(null, filenameUtility.createFilename({
 				originalname: file.originalname,
 				app: req.params.app,
-				version: req.params.version}))
+				version: new ExecutableVersion(req.params.version)}))
 		});
 	}
 

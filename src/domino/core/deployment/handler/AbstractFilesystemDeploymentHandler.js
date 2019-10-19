@@ -3,6 +3,7 @@ import config from "config";
 import fs from "fs";
 import path from "path";
 import logManager from "../../../../domino_main";
+import NonExistingExecutableError from "../../error/NonExistingExecutableError";
 
 const logger = logManager.createLogger("AbstractFilesystemDeploymentHandler");
 
@@ -29,7 +30,7 @@ export default class AbstractFilesystemDeploymentHandler extends AbstractDeploym
 	 */
 	deploy(registration, version) {
 
-		logger.info(`Deploying app=${registration.appName} with version=${version}...`);
+		logger.info(`Deploying app=${registration.appName} with version=${version.getFormattedVersion()}...`);
 
 		const storedFilename = this._prepareStoredFilename(registration, version);
 		const source = this._prepareSourcePath(storedFilename);
@@ -54,7 +55,13 @@ export default class AbstractFilesystemDeploymentHandler extends AbstractDeploym
 	}
 
 	_prepareSourcePath(storedFilename) {
-		return path.join(this._storageConfig.path, storedFilename);
+
+		const sourcePath = path.join(this._storageConfig.path, storedFilename);
+		if (!fs.existsSync(sourcePath)) {
+			throw new NonExistingExecutableError(`File=${storedFilename} does not exist - deployment failed.`);
+		}
+
+		return sourcePath;
 	}
 
 	_prepareTargetPath(registration) {
