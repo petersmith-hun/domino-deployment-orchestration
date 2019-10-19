@@ -58,7 +58,8 @@ export default class AbstractFilesystemDeploymentHandler extends AbstractDeploym
 
 		const sourcePath = path.join(this._storageConfig.path, storedFilename);
 		if (!fs.existsSync(sourcePath)) {
-			throw new NonExistingExecutableError(`File=${storedFilename} does not exist - deployment failed.`);
+			logger.error(`File=${storedFilename} does not exist - deployment failed.`);
+			throw new NonExistingExecutableError();
 		}
 
 		return sourcePath;

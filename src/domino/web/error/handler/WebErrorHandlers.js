@@ -2,13 +2,15 @@ import {
 	HTTP_STATUS_BAD_REQUEST,
 	HTTP_STATUS_CONFLICTING,
 	HTTP_STATUS_INTERNAL_SERVER_ERROR,
-	HTTP_STATUS_NOT_ACCEPTABLE
+	HTTP_STATUS_NOT_ACCEPTABLE,
+	HTTP_STATUS_NOT_FOUND
 } from "../../controller/BaseController";
 import NonAcceptableMimeTypeError from "../NonAcceptableMimeTypeError";
 import NonRegisteredAppError from "../NonRegisteredAppError";
 import AlreadyExistingExecutableError from "../AlreadyExistingExecutableError";
 import logManager from "../../../../domino_main";
 import InvalidRequestError from "../InvalidRequestError";
+import NonExistingExecutableError from "../../../core/error/NonExistingExecutableError";
 
 const logger = logManager.createLogger("WebErrorHandlers");
 
@@ -39,6 +41,8 @@ export default class WebErrorHandlers {
 			status = HTTP_STATUS_CONFLICTING;
 		} else if (err instanceof InvalidRequestError) {
 			status = HTTP_STATUS_BAD_REQUEST;
+		} else if (err instanceof NonExistingExecutableError) {
+			status = HTTP_STATUS_NOT_FOUND;
 		} else {
 			logger.error("Unhandled error occurred while upload file\n", err);
 			status = HTTP_STATUS_INTERNAL_SERVER_ERROR;

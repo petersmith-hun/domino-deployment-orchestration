@@ -97,7 +97,8 @@ services:
     class: 'domino/web/ControllerRegistrations'
     arguments: [
       '@web.component.factory.multer',
-      '@web.controller.upload'
+      '@web.controller.upload',
+      '@web.controller.lifecycle'
     ]
 
   web.component.factory.multer:
@@ -122,3 +123,10 @@ services:
   web.controller.upload:
     class: 'domino/web/controller/UploadController'
     arguments: ['@core.service.deployment']
+
+  web.controller.lifecycle:
+    class: 'domino/web/controller/LifecycleController'
+    arguments: [
+      '@core.service.deployment',
+      '@web.component.request-validator'
+    ]

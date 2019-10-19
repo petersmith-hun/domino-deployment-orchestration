@@ -26,6 +26,8 @@ export default class DeploymentService {
 		} else {
 			logger.warn(`No appropriate version of app=${app} could be found - rejecting deployment`);
 		}
+
+		return latestVersion;
 	}
 
 	/**

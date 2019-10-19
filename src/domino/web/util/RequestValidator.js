@@ -22,32 +22,47 @@ export default class RequestValidator {
 	 * @param requestParams HTTP request parameters
 	 * @returns {boolean} true if the provided parameters are valid, false otherwise
 	 */
-	isDeploymentRequestValid(requestParams) {
+	isUploadRequestValid(requestParams) {
 
-		return this._requiredParametersPresent(requestParams)
+		return this._requiredParametersPresent(requestParams, [_PARAMETER_APP, _PARAMETER_VERSION])
 			&& this._isAppNameValid(requestParams)
 			&& this._isVersionValid(requestParams);
+	}
+
+	/**
+	 * Validates a lifecycle request.
+	 * Request must contain the 'app' parameter, and it can optionally contain the 'version' parameter with the same restrictions
+	 * specified for RequestValidator#isUploadRequestValid method.
+	 *
+	 * @param requestParams HTTP request parameters
+	 * @returns {boolean} true if the provided parameters are valid, false otherwise
+	 */
+	isLifecycleRequestValid(requestParams) {
+
+		return this._requiredParametersPresent(requestParams, [_PARAMETER_APP])
+			&& this._isAppNameValid(requestParams)
+			&& (requestParams[_PARAMETER_VERSION] === undefined || this._isVersionValid(requestParams));
 	}
 
 	/**
 	 * Asserts that the given deployment request is valid.
 	 * For more information please see isDeploymentRequestValid method.
 	 *
-	 * @see RequestValidator#isDeploymentRequestValid
+	 * @see RequestValidator#isUploadRequestValid
 	 * @param requestParams HTTP request parameters
 	 * @throws InvalidRequestError if the provided HTTP request is invalid
 	 */
 	assertValidDeploymentRequest(requestParams) {
 
-		if (!this.isDeploymentRequestValid(requestParams)) {
+		if (!this.isUploadRequestValid(requestParams)) {
 			throw new InvalidRequestError();
 		}
 	}
 
-	_requiredParametersPresent(requestParams) {
+	_requiredParametersPresent(requestParams, requiredParameters) {
 
 		let valid = true;
-		for (let parameter of [_PARAMETER_APP, _PARAMETER_VERSION]) {
+		for (let parameter of requiredParameters) {
 			valid = requestParams.hasOwnProperty(parameter) && requestParams[parameter] !== null;
 
 			if (!valid) {

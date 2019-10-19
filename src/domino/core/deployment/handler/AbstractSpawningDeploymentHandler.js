@@ -47,6 +47,7 @@ export default class AbstractSpawningDeploymentHandler extends AbstractFilesyste
 
 		logger.info(`Stopping application=${registration.appName}...`);
 		this._executableBinaryHandler.killProcess(this._processes[registration.appName], registration);
+		this._processes[registration.appName] = null;
 	}
 
 	/**

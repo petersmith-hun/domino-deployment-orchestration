@@ -14,7 +14,7 @@ export default class UploadController extends BaseController {
 	}
 
 	/**
-	 * POST /upload
+	 * POST /upload/:app/:version
 	 * Handles executable upload.
 	 * Requires the following path parameters:
 	 *  - app: name of a (registered) application
