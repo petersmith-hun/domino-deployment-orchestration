@@ -2,6 +2,7 @@
 docker/config/
 node_modules/
 logs/
+scripts/
 storage/
 *.iml
 domino-registrations.yml

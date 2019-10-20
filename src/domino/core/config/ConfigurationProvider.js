@@ -55,4 +55,17 @@ export default class ConfigurationProvider {
 	getServiceHandler() {
 		return config.get("domino.service-handler");
 	}
+
+	/**
+	 * Returns the security configuration parameters:
+	 *  - expiration
+	 *  - jwt-private-key
+	 *  - username
+	 *  - password
+	 *
+	 * @returns the security configuration parameters
+	 */
+	getSecurityConfig() {
+		return config.get("domino.auth");
+	}
 }

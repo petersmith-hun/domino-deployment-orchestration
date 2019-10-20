@@ -9,7 +9,7 @@ const logger = logManager.createLogger("UploadController");
 export default class UploadController extends BaseController {
 
 	constructor(deploymentService) {
-		super();
+		super("upload");
 		this._deploymentService = deploymentService;
 	}
 

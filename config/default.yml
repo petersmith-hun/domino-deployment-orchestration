@@ -12,3 +12,8 @@ domino:
     port: 9987
   service-handler: systemd
   start-timeout: 3000
+  auth:
+    expiration: "30 days"
+    jwt-private-key: <PROVIDE_ME>
+    username: <PROVIDE_ME>
+    password: <PROVIDE_ME>
