@@ -18,6 +18,7 @@ export default class ControllerRegistrations {
 	registerRoutes(expressApp) {
 
 		expressApp
+			.use((req, resp, next) => this._expressMiddlewareProvider.remoteAddressVerification(req, resp, next))
 			.use((req, resp, next) => this._expressMiddlewareProvider.jwtVerification(req, resp, next))
 			.use((req, resp, next) => this._expressMiddlewareProvider.callStartMarker(req, resp, next));
 

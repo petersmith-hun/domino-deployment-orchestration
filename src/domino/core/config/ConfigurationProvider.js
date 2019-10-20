@@ -62,6 +62,7 @@ export default class ConfigurationProvider {
 	 *  - jwt-private-key
 	 *  - username
 	 *  - password
+	 *  - allowed-sources (list)
 	 *
 	 * @returns the security configuration parameters
 	 */

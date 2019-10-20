@@ -24,8 +24,9 @@ const _PUBLIC_ENDPOINTS = [
  */
 export default class ExpressMiddlewareProvider {
 
-	constructor(jwtUtility) {
+	constructor(jwtUtility, configurationProvider) {
 		this._jwtUtility = jwtUtility;
+		this._securityConfig = configurationProvider.getSecurityConfig();
 	}
 
 	/**
@@ -48,6 +49,26 @@ export default class ExpressMiddlewareProvider {
 					.send();
 			}
 		}
+	}
+
+	/**
+	 * Verifies if the source of the request is allowed.
+	 *
+	 * @param req Express request object
+	 * @param resp Express response object
+	 * @param next reference of next middleware in chain
+	 */
+	remoteAddressVerification(req, resp, next) {
+
+		const sourceAddress = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+		const allowedSources = this._securityConfig["allowed-sources"];
+
+		if (Array.isArray(allowedSources) && !allowedSources.includes(sourceAddress)) {
+			logger.error(`Source=${sourceAddress} is not allowed - rejecting request`);
+			throw new AuthenticationError("Request source address denied");
+		}
+
+		next();
 	}
 
 	/**

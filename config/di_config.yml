@@ -119,7 +119,8 @@ services:
   web.component.middleware-provider:
     class: 'domino/web/middleware/ExpressMiddlewareProvider'
     arguments: [
-      '@web.component.jwt-utility'
+      '@web.component.jwt-utility',
+      '@core.component.config-provider'
     ]
 
   web.component.factory.multer:

@@ -17,3 +17,4 @@ domino:
     jwt-private-key: <PROVIDE_ME>
     username: <PROVIDE_ME>
     password: <PROVIDE_ME>
+    allowed-sources: ALL
