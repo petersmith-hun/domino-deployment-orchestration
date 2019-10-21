@@ -109,8 +109,17 @@ services:
     class: 'domino/web/ControllerRegistrations'
     arguments: [
       '@web.component.factory.multer',
+      '@core.component.config-provider',
+      '@web.component.middleware-provider',
       '@web.controller.upload',
       '@web.controller.lifecycle',
+      '@web.controller.auth'
+    ]
+
+  web.component.middleware-provider:
+    class: 'domino/web/middleware/ExpressMiddlewareProvider'
+    arguments: [
+      '@web.component.jwt-utility',
       '@core.component.config-provider'
     ]
 
@@ -134,6 +143,12 @@ services:
       '@core.component.config-provider'
     ]
 
+  web.component.jwt-utility:
+    class: 'domino/web/util/JWTUtility'
+    arguments: [
+      '@core.component.config-provider'
+    ]
+
   # controllers
   web.controller.upload:
     class: 'domino/web/controller/UploadController'
@@ -146,4 +161,10 @@ services:
     arguments: [
       '@core.service.deployment',
       '@web.component.request-validator'
+    ]
+
+  web.controller.auth:
+    class: 'domino/web/controller/AuthenticationController'
+    arguments: [
+      '@web.component.jwt-utility'
     ]

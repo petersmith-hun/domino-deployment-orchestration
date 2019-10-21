@@ -22,12 +22,12 @@ export default class DominoApplication {
 		const port = this._serverConfig.get("port");
 		const host = this._serverConfig.get("host");
 
-		this._registrations.registerRoutes(this._express);
-
 		this._express
 			.use(bodyParser.json())
 			.listen(port, host, () => {
 				logger.info(`Domino (v${packageJson.version}) application server is listening at http://${host}:${port}/`);
 			});
+
+		this._registrations.registerRoutes(this._express);
 	}
 }

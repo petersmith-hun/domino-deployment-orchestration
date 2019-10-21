@@ -1,6 +1,7 @@
 export const HTTP_STATUS_CREATED = 201;
 export const HTTP_STATUS_ACCEPTED = 202;
 export const HTTP_STATUS_BAD_REQUEST = 400;
+export const HTTP_STATUS_FORBIDDEN = 403;
 export const HTTP_STATUS_NOT_FOUND = 404;
 export const HTTP_STATUS_NOT_ACCEPTABLE = 406;
 export const HTTP_STATUS_CONFLICTING = 409;
@@ -13,6 +14,10 @@ const NS_TO_MS_DIVISOR = 1000 * 1000;
  * Base controller.
  */
 export default class BaseController {
+
+	constructor(controllerName) {
+		this._controllerName = controllerName;
+	}
 
 	/**
 	 * Returns the processing time of the current request in milliseconds.
@@ -30,5 +35,14 @@ export default class BaseController {
 		}
 
 		return processingTime;
+	}
+
+	/**
+	 * Returns the name of the controllers - used during controller registration.
+	 *
+	 * @returns {string} name of the controller
+	 */
+	getControllerName() {
+		return this._controllerName;
 	}
 }

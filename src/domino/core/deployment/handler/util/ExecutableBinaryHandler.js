@@ -29,6 +29,8 @@ export default class ExecutableBinaryHandler {
 			cwd: spawnParameters.workDirectory,
 			detached: true,
 			stdio: "ignore"
+		}).on("error", err => {
+			logger.error(`Failed to spawn application - reason: ${err.message}`);
 		});
 	}
 

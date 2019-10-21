@@ -9,7 +9,7 @@ const logger = logManager.createLogger("LifecycleController");
 export default class LifecycleController extends BaseController {
 
 	constructor(deploymentService, requestValidator) {
-		super();
+		super("lifecycle");
 		this._deploymentService = deploymentService;
 		this._requestValidator = requestValidator;
 	}
