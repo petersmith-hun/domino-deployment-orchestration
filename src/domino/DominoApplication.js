@@ -1,8 +1,8 @@
 import bodyParser from "body-parser";
-import logManager from "../domino_main";
+import LoggerFactory from "./helper/LoggerFactory";
 
 const packageJson = require("../../package.json");
-const logger = logManager.createLogger("DominoApplication");
+const logger = LoggerFactory.createLogger("DominoApplication");
 
 /**
  * Domino application entry point.

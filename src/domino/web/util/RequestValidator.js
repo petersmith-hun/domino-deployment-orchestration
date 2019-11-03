@@ -1,7 +1,7 @@
-import logManager from "../../../domino_main";
 import InvalidRequestError from "../error/InvalidRequestError";
+import LoggerFactory from "../../helper/LoggerFactory";
 
-const logger = logManager.createLogger("RequestValidator");
+const logger = LoggerFactory.createLogger("RequestValidator");
 const _APP_NAME_MATCHER = /^[a-z]+$/;
 const _VERSION_NUMBER_MATCHER = /^[a-zA-Z0-9.\-_]+$/;
 const _PARAMETER_APP = "app";

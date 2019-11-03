@@ -1,12 +1,12 @@
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import AuthenticationError from "../error/AuthenticationError";
-import logManager from "../../../domino_main";
+import LoggerFactory from "../../helper/LoggerFactory";
 
 const _BEARER_TOKEN_MATCHER = /^Bearer (.+)$/;
 const _JWT_ISSUER = "domino";
 
-const logger = logManager.createLogger("JWTUtility");
+const logger = LoggerFactory.createLogger("JWTUtility");
 
 /**
  * Utility class for handling JWT tokens.

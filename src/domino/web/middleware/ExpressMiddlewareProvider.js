@@ -12,9 +12,9 @@ import AlreadyExistingExecutableError from "../error/AlreadyExistingExecutableEr
 import InvalidRequestError from "../error/InvalidRequestError";
 import NonExistingExecutableError from "../../core/error/NonExistingExecutableError";
 import AuthenticationError from "../error/AuthenticationError";
-import logManager from "../../../domino_main";
+import LoggerFactory from "../../helper/LoggerFactory";
 
-const logger = logManager.createLogger("ExpressMiddlewareProvider");
+const logger = LoggerFactory.createLogger("ExpressMiddlewareProvider");
 const _PUBLIC_ENDPOINTS = [
 	"/claim-token"
 ];

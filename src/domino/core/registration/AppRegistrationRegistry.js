@@ -1,8 +1,8 @@
-import logManager from "../../../domino_main";
 import yaml from "js-yaml";
 import fs from "fs";
+import LoggerFactory from "../../helper/LoggerFactory";
 
-const logger = logManager.createLogger("AppRegistrationRegistry");
+const logger = LoggerFactory.createLogger("AppRegistrationRegistry");
 
 /**
  * Component to handle application registrations by reading up the relevant section of configuration.

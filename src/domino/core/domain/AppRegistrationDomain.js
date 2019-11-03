@@ -1,3 +1,5 @@
+import ms from "ms";
+
 const SOURCE_TYPES = ["FILESYSTEM"];
 const EXECUTION_HANDLERS = ["EXECUTABLE", "RUNTIME", "SERVICE"];
 
@@ -11,6 +13,7 @@ export default class AppRegistration {
 		this.source = new AppSource(yamlSourceDocument["source"]);
 		this.runtime = yamlSourceDocument["runtime"];
 		this.execution = new AppExecution(yamlSourceDocument["execution"]);
+		this.healthCheck = new AppHealthCheck(yamlSourceDocument["health-check"]);
 	}
 }
 
@@ -20,9 +23,11 @@ export default class AppRegistration {
 export class AppSource {
 
 	constructor(yamlSourceDocumentSourceNode) {
-		this.type = AppSource.assertType(yamlSourceDocumentSourceNode["type"]);
-		this.home = yamlSourceDocumentSourceNode["home"];
-		this.resource = yamlSourceDocumentSourceNode["resource"];
+		if (yamlSourceDocumentSourceNode) {
+			this.type = AppSource.assertType(yamlSourceDocumentSourceNode["type"]);
+			this.home = yamlSourceDocumentSourceNode["home"];
+			this.resource = yamlSourceDocumentSourceNode["resource"];
+		}
 	}
 
 	/**
@@ -48,10 +53,12 @@ export class AppSource {
 export class AppExecution {
 
 	constructor(yamlSourceDocumentExecutionNode) {
-		this.commandName = yamlSourceDocumentExecutionNode["command-name"];
-		this.user = yamlSourceDocumentExecutionNode["as-user"];
-		this.executionHandler = AppExecution.assertExecutionHandler(yamlSourceDocumentExecutionNode["via"]);
-		this.args = yamlSourceDocumentExecutionNode["args"];
+		if (yamlSourceDocumentExecutionNode) {
+			this.commandName = yamlSourceDocumentExecutionNode["command-name"];
+			this.user = yamlSourceDocumentExecutionNode["as-user"];
+			this.executionHandler = AppExecution.assertExecutionHandler(yamlSourceDocumentExecutionNode["via"]);
+			this.args = yamlSourceDocumentExecutionNode["args"];
+		}
 	}
 
 	/**
@@ -68,5 +75,21 @@ export class AppExecution {
 		}
 
 		return executionHandler;
+	}
+}
+
+/**
+ * Domain class representing an application health-check descriptor.
+ */
+export class AppHealthCheck {
+
+	constructor(yamlSourceDocumentExecutionNode) {
+		if (yamlSourceDocumentExecutionNode) {
+			this.enabled = yamlSourceDocumentExecutionNode["enabled"];
+			this.delay = ms(yamlSourceDocumentExecutionNode["delay"]);
+			this.timeout = ms(yamlSourceDocumentExecutionNode["timeout"]);
+			this.maxAttempts = yamlSourceDocumentExecutionNode["max-attempts"];
+			this.endpoint = yamlSourceDocumentExecutionNode["endpoint"];
+		}
 	}
 }

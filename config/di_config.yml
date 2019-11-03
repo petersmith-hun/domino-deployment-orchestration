@@ -94,13 +94,17 @@ services:
       '@core.component.svc-adapter.systemd'
     ]
 
+  core.component.health-check-provider:
+    class: 'domino/core/deployment/healthcheck/HealthCheckProvider.js'
+
   # services
   core.service.deployment:
     class: 'domino/core/service/DeploymentService'
     arguments: [
       '@core.component.registrations.registry',
       '@core.component.deployment.handler.registry',
-      '@core.component.utility.executable-version'
+      '@core.component.utility.executable-version',
+      '@core.component.health-check-provider'
     ]
 
   # web layer
