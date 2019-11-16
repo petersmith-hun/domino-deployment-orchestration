@@ -1,6 +1,6 @@
-import logManager from "../../../../../domino_main";
+import LoggerFactory from "../../../../helper/LoggerFactory";
 
-const logger = logManager.createLogger('ServiceAdapterRegistry');
+const logger = LoggerFactory.createLogger('ServiceAdapterRegistry');
 
 /**
  * Registry handling the supported service adapters.

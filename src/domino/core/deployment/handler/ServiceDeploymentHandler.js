@@ -1,7 +1,7 @@
 import AbstractFilesystemDeploymentHandler from "./AbstractFilesystemDeploymentHandler";
-import logManager from "../../../../domino_main";
+import LoggerFactory from "../../../helper/LoggerFactory";
 
-const logger = logManager.createLogger("ServiceDeploymentHandler");
+const logger = LoggerFactory.createLogger("ServiceDeploymentHandler");
 
 /**
  * AbstractFilesystemDeploymentHandler implementation that handles deployment lifecycle of applications

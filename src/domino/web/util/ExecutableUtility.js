@@ -1,12 +1,12 @@
 import fs from "fs";
 import path from "path";
-import logManager from "../../../domino_main";
 import NonAcceptableMimeTypeError from "../error/NonAcceptableMimeTypeError";
 import NonRegisteredAppError from "../error/NonRegisteredAppError";
 import AlreadyExistingExecutableError from "../error/AlreadyExistingExecutableError";
 import ExecutableVersion from "../../core/domain/ExecutableVersion";
+import LoggerFactory from "../../helper/LoggerFactory";
 
-const logger = logManager.createLogger("ExecutableUtility");
+const logger = LoggerFactory.createLogger("ExecutableUtility");
 
 /**
  * File handling utilities.

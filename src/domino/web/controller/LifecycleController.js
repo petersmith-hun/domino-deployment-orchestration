@@ -1,7 +1,7 @@
 import BaseController, {HTTP_STATUS_ACCEPTED, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_CREATED} from "./BaseController";
-import logManager from "../../../domino_main";
+import LoggerFactory from "../../helper/LoggerFactory";
 
-const logger = logManager.createLogger("LifecycleController");
+const logger = LoggerFactory.createLogger("LifecycleController");
 
 /**
  * Controller implementation to handle lifecycle of registered applications.

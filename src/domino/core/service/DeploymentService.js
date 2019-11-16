@@ -1,17 +1,18 @@
-import logManager from "../../../domino_main";
 import ExecutableVersion from "../domain/ExecutableVersion";
+import LoggerFactory from "../../helper/LoggerFactory";
 
-const logger = logManager.createLogger("DeploymentService");
+const logger = LoggerFactory.createLogger("DeploymentService");
 
 /**
  * Service for deployment handling operations.
  */
 export default class DeploymentService {
 
-	constructor(appRegistrationRegistry, deploymentHandlerRegistry, executableVersionUtility) {
+	constructor(appRegistrationRegistry, deploymentHandlerRegistry, executableVersionUtility, healthCheckProvider) {
 		this._appRegistrationRegistry = appRegistrationRegistry;
 		this._deploymentHandlerRegistry = deploymentHandlerRegistry;
 		this._executableVersionUtility = executableVersionUtility;
+		this._healthCheckProvider = healthCheckProvider;
 	}
 
 	/**
@@ -51,7 +52,10 @@ export default class DeploymentService {
 	 * @param app application to be started
 	 */
 	start(app) {
-		this._executeOperation(app, (handler, registration) => handler.start(registration));
+		this._executeOperation(app, (handler, registration) => {
+			handler.start(registration);
+			this._healthCheckProvider.executeHealthCheck(registration);
+		});
 	}
 
 	/**
@@ -69,7 +73,10 @@ export default class DeploymentService {
 	 * @param app application to be restarted
 	 */
 	restart(app) {
-		this._executeOperation(app, (handler, registration) => handler.restart(registration));
+		this._executeOperation(app, (handler, registration) => {
+			handler.restart(registration);
+			this._healthCheckProvider.executeHealthCheck(registration);
+		});
 	}
 
 	_executeOperation(app, operation) {

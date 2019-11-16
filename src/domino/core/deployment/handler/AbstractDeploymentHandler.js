@@ -1,6 +1,6 @@
-import logManager from "../../../../domino_main";
+import LoggerFactory from "../../../helper/LoggerFactory";
 
-const logger = logManager.createLogger("AbstractDeploymentHandler");
+const logger = LoggerFactory.createLogger("AbstractDeploymentHandler");
 
 /**
  * Base (abstract) deployment handler component (every method throws Error, so they must be overridden).

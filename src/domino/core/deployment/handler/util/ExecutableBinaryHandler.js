@@ -1,8 +1,8 @@
 import * as proc from "child_process";
-import logManager from "../../../../../domino_main";
 import {snapshot} from "process-list";
+import LoggerFactory from "../../../../helper/LoggerFactory";
 
-const logger = logManager.createLogger('ExecutableBinaryHandler');
+const logger = LoggerFactory.createLogger('ExecutableBinaryHandler');
 
 /**
  * Utility class for tools handling executable binaries.

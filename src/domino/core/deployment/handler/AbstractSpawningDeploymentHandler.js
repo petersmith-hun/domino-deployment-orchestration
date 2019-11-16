@@ -1,7 +1,7 @@
 import AbstractFilesystemDeploymentHandler from "./AbstractFilesystemDeploymentHandler";
-import logManager from "../../../../domino_main";
+import LoggerFactory from "../../../helper/LoggerFactory";
 
-const logger = logManager.createLogger("AbstractSpawningDeploymentHandler");
+const logger = LoggerFactory.createLogger("AbstractSpawningDeploymentHandler");
 
 /**
  * Common (abstract) AbstractFilesystemDeploymentHandler implementation for deployment handlers using spawn operation to start processes.

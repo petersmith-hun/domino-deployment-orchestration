@@ -1,7 +1,7 @@
-import logManager from "../../../domino_main";
 import BaseController, {HTTP_STATUS_CREATED} from "./BaseController";
+import LoggerFactory from "../../helper/LoggerFactory";
 
-const logger = logManager.createLogger("UploadController");
+const logger = LoggerFactory.createLogger("UploadController");
 
 /**
  * Controller implementation to handler executable binary uploads.

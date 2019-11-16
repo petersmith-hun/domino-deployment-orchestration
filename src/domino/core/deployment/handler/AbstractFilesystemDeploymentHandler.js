@@ -1,10 +1,10 @@
 import AbstractDeploymentHandler from "./AbstractDeploymentHandler";
 import fs from "fs";
 import path from "path";
-import logManager from "../../../../domino_main";
 import NonExistingExecutableError from "../../error/NonExistingExecutableError";
+import LoggerFactory from "../../../helper/LoggerFactory";
 
-const logger = logManager.createLogger("AbstractFilesystemDeploymentHandler");
+const logger = LoggerFactory.createLogger("AbstractFilesystemDeploymentHandler");
 
 const DEFAULT_EXECUTION_PERMISSION = 0o774;
 
