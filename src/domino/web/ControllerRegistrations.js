@@ -35,7 +35,7 @@ export default class ControllerRegistrations {
 			.put("/lifecycle/:app/deploy", (req, resp) => this._controllerMap.get("lifecycle").deploy(req, resp))
 			.put("/lifecycle/:app/deploy/:version", (req, resp) => this._controllerMap.get("lifecycle").deploy(req, resp))
 			.put("/lifecycle/:app/start", (req, resp) => this._controllerMap.get("lifecycle").start(req, resp))
-			.put("/lifecycle/:app/restart", (req, resp) => this._controllerMap.get("lifecycle").restart(req, resp))
+			.put("/lifecycle/:app/restart", async (req, resp) => this._controllerMap.get("lifecycle").restart(req, resp))
 			.delete("/lifecycle/:app/stop", (req, resp) => this._controllerMap.get("lifecycle").stop(req, resp))
 			.use((err, req, resp, next) => this._expressMiddlewareProvider.defaultErrorHandler(err, req, resp, next));
 

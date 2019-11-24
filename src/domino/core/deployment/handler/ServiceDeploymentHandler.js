@@ -41,7 +41,7 @@ export default class ServiceDeploymentHandler extends AbstractFilesystemDeployme
 	 *
 	 * @param registration AppRegistration object containing information about the application to be restarted
 	 */
-	restart(registration) {
+	async restart(registration) {
 		logger.info(`Restarting application=${registration.appName} by OS service...`);
 		this._serviceAdapter.restart(registration.execution.commandName);
 		logger.info(`Restarted application=${registration.appName}`);

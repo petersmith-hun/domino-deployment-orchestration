@@ -71,8 +71,8 @@ export default class LifecycleController extends BaseController {
 	 * @param req Express request object
 	 * @param resp Express response object
 	 */
-	restart(req, resp) {
-		this._executeLifecycleCommand(req, resp, (app) => this._deploymentService.restart(app));
+	async restart(req, resp) {
+		return this._executeLifecycleCommand(req, resp, (app) => this._deploymentService.restart(app));
 	}
 
 	_executeWithValidation(req, commandSupplier) {
@@ -88,16 +88,19 @@ export default class LifecycleController extends BaseController {
 		return responseStatus;
 	}
 
-	_executeLifecycleCommand(req, resp, commandConsumer) {
+	async _executeLifecycleCommand(req, resp, commandConsumer) {
 
-		const responseStatus = this._executeWithValidation(req, () => {
-			commandConsumer(req.params.app);
-			return HTTP_STATUS_ACCEPTED;
+		const responseStatus = await this._executeWithValidation(req, async () => {
+			const commandResult = await commandConsumer(req.params.app);
+			return commandResult
+				? commandResult
+				: HTTP_STATUS_ACCEPTED;
 		});
 
-		resp.status(responseStatus)
+		resp.status(HTTP_STATUS_ACCEPTED)
 			.send({
-				message: `Processed in ${this.getProcessingTime(req)} ms`
+				message: `Processed in ${this.getProcessingTime(req)} ms`,
+				status: responseStatus
 			});
 	}
 }

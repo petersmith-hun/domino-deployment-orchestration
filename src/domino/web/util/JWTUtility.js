@@ -20,7 +20,7 @@ export default class JWTUtility {
 	/**
 	 * Authenticates a token claim request and creates the token in case of success.
 	 *
-	 * @param authRequest object containing a username and a password
+	 * @param authRequest - object containing a username and a password
 	 * @returns created JWT token
 	 * @throws AuthenticationError in case of the failed authenticated
 	 */
@@ -30,6 +30,8 @@ export default class JWTUtility {
 			logger.error("Authentication failure - invalid credentials, rejecting token creation");
 			throw new AuthenticationError("Authentication failure - invalid claim");
 		}
+
+		// TODO add log about successful auth
 
 		return jwt.sign({service: authRequest.username}, this._securityConfig["jwt-private-key"], {
 			expiresIn: this._securityConfig.expiration,

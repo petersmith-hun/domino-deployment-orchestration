@@ -46,9 +46,11 @@ export default class AbstractDeploymentHandler {
 	 *
 	 * @param registration AppRegistration object containing information about the application to be restarted
 	 */
-	restart(registration) {
+	async restart(registration) {
 		this.stop(registration);
 		logger.info(`Waiting for the application to stop... Continuing after ${this._startTimeout} ms`);
-		setTimeout(() => this.start(registration), this._startTimeout);
+		await setTimeout(() => this.start(registration), this._startTimeout);
+
+		return true;
 	}
 }
