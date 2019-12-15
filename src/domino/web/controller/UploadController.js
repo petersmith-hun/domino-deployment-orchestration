@@ -1,5 +1,6 @@
 import BaseController, {HTTP_STATUS_CREATED} from "./BaseController";
 import LoggerFactory from "../../helper/LoggerFactory";
+import {DeploymentStatus} from "../../core/domain/DeploymentStatus";
 
 const logger = LoggerFactory.createLogger("UploadController");
 
@@ -26,21 +27,28 @@ export default class UploadController extends BaseController {
 	 * @param req Express request object
 	 * @param resp Express response object
 	 */
-	uploadExecutable(req, resp) {
+	async uploadExecutable(req, resp) {
 
-		logger.info(`File with originalName=${req.file.originalname} has been uploaded for app=${req.params.app} with version=${req.params.version}`);
+		const app = req.params.app;
+		const version = req.params.version;
+		logger.info(`File with originalName=${req.file.originalname} has been uploaded for app=${app} with version=${version}`);
 
+		let uploadStatus;
 		if (req.query.autodeploy) {
-			this._deploymentService.deploy(req.params.app, req.params.version);
+			uploadStatus = await this._deploymentService.deploy(app, version).status;
 
-			if (req.query.autostart) {
-				this._deploymentService.restart(req.params.app);
+			if (uploadStatus === DeploymentStatus.DEPLOYED && req.query.autostart) {
+				uploadStatus = await this._deploymentService.restart(app);
 			}
+		} else {
+			uploadStatus = DeploymentStatus.UPLOADED
 		}
 
-		resp.status(HTTP_STATUS_CREATED)
+		resp.status(this.mapDeploymentStatusToStatusCode(uploadStatus))
 			.send({
-				message: `Uploaded in ${this.getProcessingTime(req)} ms`
+				message: `Uploaded in ${this.getProcessingTime(req)} ms`,
+				status: uploadStatus,
+				version: version
 			});
 	}
 }

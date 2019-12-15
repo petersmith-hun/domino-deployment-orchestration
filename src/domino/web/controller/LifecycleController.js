@@ -1,5 +1,6 @@
 import BaseController, {HTTP_STATUS_ACCEPTED, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_CREATED} from "./BaseController";
 import LoggerFactory from "../../helper/LoggerFactory";
+import {DeploymentStatus} from "../../core/domain/DeploymentStatus";
 
 const logger = LoggerFactory.createLogger("LifecycleController");
 
@@ -22,23 +23,27 @@ export default class LifecycleController extends BaseController {
 	 * @param req Express request object
 	 * @param resp Express response object
 	 */
-	deploy(req, resp) {
+	async deploy(req, resp) {
 
-		let version = req.params.version;
-		const responseStatus = this._executeWithValidation(req, () => {
+		const version = req.params.version;
+		const app = req.params.app;
+		const deploymentStatus = await this._executeWithValidation(req, async () => {
 
-			if (req.params.version) {
-				this._deploymentService.deploy(req.params.app, req.params.version);
+			let deploymentStatus;
+			if (version) {
+				deploymentStatus = await this._deploymentService.deploy(app, version);
 			} else {
-				version = this._deploymentService.deployLatest(req.params.app);
+				deploymentStatus = await this._deploymentService.deployLatest(app);
 			}
 
-			return HTTP_STATUS_CREATED;
+			return deploymentStatus;
 		});
 
-		resp.status(responseStatus)
+		resp.status(this.mapDeploymentStatusToStatusCode(deploymentStatus.status))
 			.send({
-				message: `Deployed version=${version} in ${this.getProcessingTime(req)} ms`
+				message: `Deployed version=${version} in ${this.getProcessingTime(req)} ms`,
+				status: deploymentStatus.status,
+				version: deploymentStatus.version
 			});
 	}
 
@@ -49,8 +54,8 @@ export default class LifecycleController extends BaseController {
 	 * @param req Express request object
 	 * @param resp Express response object
 	 */
-	start(req, resp) {
-		this._executeLifecycleCommand(req, resp, (app) => this._deploymentService.start(app));
+	async start(req, resp) {
+		return this._executeLifecycleCommand(req, resp, (app) => this._deploymentService.start(app));
 	}
 
 	/**
@@ -60,8 +65,8 @@ export default class LifecycleController extends BaseController {
 	 * @param req Express request object
 	 * @param resp Express response object
 	 */
-	stop(req, resp) {
-		this._executeLifecycleCommand(req, resp, (app) => this._deploymentService.stop(app));
+	async stop(req, resp) {
+		return this._executeLifecycleCommand(req, resp, (app) => this._deploymentService.stop(app));
 	}
 
 	/**
@@ -75,32 +80,27 @@ export default class LifecycleController extends BaseController {
 		return this._executeLifecycleCommand(req, resp, (app) => this._deploymentService.restart(app));
 	}
 
-	_executeWithValidation(req, commandSupplier) {
+	async _executeWithValidation(req, commandSupplier) {
 
-		let responseStatus = HTTP_STATUS_CREATED;
+		let deploymentStatus;
 		if (!this._requestValidator.isLifecycleRequestValid(req.params)) {
 			logger.warn("Validation failed for deployment request");
-			responseStatus = HTTP_STATUS_BAD_REQUEST;
+			deploymentStatus = DeploymentStatus.INVALID_REQUEST;
 		} else {
-			responseStatus = commandSupplier();
+			deploymentStatus = await commandSupplier();
 		}
 
-		return responseStatus;
+		return deploymentStatus;
 	}
 
 	async _executeLifecycleCommand(req, resp, commandConsumer) {
 
-		const responseStatus = await this._executeWithValidation(req, async () => {
-			const commandResult = await commandConsumer(req.params.app);
-			return commandResult
-				? commandResult
-				: HTTP_STATUS_ACCEPTED;
-		});
+		const deploymentStatus = await this._executeWithValidation(req, async () => await commandConsumer(req.params.app));
 
-		resp.status(HTTP_STATUS_ACCEPTED)
+		resp.status(this.mapDeploymentStatusToStatusCode(deploymentStatus))
 			.send({
 				message: `Processed in ${this.getProcessingTime(req)} ms`,
-				status: responseStatus
+				status: deploymentStatus
 			});
 	}
 }

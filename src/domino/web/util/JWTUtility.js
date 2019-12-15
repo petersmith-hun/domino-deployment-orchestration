@@ -31,7 +31,7 @@ export default class JWTUtility {
 			throw new AuthenticationError("Authentication failure - invalid claim");
 		}
 
-		// TODO add log about successful auth
+		logger.info(`Service ${authRequest.username} successfully authenticated - generating token.`);
 
 		return jwt.sign({service: authRequest.username}, this._securityConfig["jwt-private-key"], {
 			expiresIn: this._securityConfig.expiration,

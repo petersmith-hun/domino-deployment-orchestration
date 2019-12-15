@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import NonExistingExecutableError from "../../error/NonExistingExecutableError";
 import LoggerFactory from "../../../helper/LoggerFactory";
+import {DeploymentStatus} from "../../domain/DeploymentStatus";
 
 const logger = LoggerFactory.createLogger("AbstractFilesystemDeploymentHandler");
 
@@ -27,7 +28,7 @@ export default class AbstractFilesystemDeploymentHandler extends AbstractDeploym
 	 * @param registration AppRegistration object containing information about the application to be deployed
 	 * @param version version of the application to be deployed
 	 */
-	deploy(registration, version) {
+	async deploy(registration, version) {
 
 		logger.info(`Deploying app=${registration.appName} with version=${version.getFormattedVersion()}...`);
 
@@ -35,15 +36,20 @@ export default class AbstractFilesystemDeploymentHandler extends AbstractDeploym
 		const source = this._prepareSourcePath(storedFilename);
 		const target = this._prepareTargetPath(registration);
 
+		let deploymentResult;
 		try {
 			const userID = this._executorUserRegistry.getUserID(registration);
 			fs.copyFileSync(source, target);
 			fs.chmodSync(target, DEFAULT_EXECUTION_PERMISSION);
 			fs.chownSync(target, userID, userID);
 			logger.info(`Successfully deployed app=${registration.appName} from=${source} to=${target}`);
+			deploymentResult = this._prepareDeploymentResult(version, true);
 		} catch (e) {
 			logger.error(`Failed to deploy app=${registration.appName} from=${source} to=${target}, reason=${e.message}`)
+			deploymentResult = this._prepareDeploymentResult(version, false);
 		}
+
+		return deploymentResult;
 	}
 	_prepareStoredFilename(registration, version) {
 		return this._filenameUtility.createFilename({
@@ -66,5 +72,15 @@ export default class AbstractFilesystemDeploymentHandler extends AbstractDeploym
 
 	_prepareTargetPath(registration) {
 		return path.join(registration.source.home, registration.source.resource);
+	}
+
+
+	_prepareDeploymentResult(version, successful) {
+		return Promise.resolve({
+			status: successful
+				? DeploymentStatus.DEPLOYED
+				: DeploymentStatus.DEPLOY_FAILED_UNKNOWN,
+			version: version
+		});
 	}
 }

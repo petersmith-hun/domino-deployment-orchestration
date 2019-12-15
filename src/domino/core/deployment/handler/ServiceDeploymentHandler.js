@@ -1,5 +1,6 @@
 import AbstractFilesystemDeploymentHandler from "./AbstractFilesystemDeploymentHandler";
 import LoggerFactory from "../../../helper/LoggerFactory";
+import {DeploymentStatus} from "../../domain/DeploymentStatus";
 
 const logger = LoggerFactory.createLogger("ServiceDeploymentHandler");
 
@@ -19,10 +20,12 @@ export default class ServiceDeploymentHandler extends AbstractFilesystemDeployme
 	 *
 	 * @param registration AppRegistration object containing information about the application to be started
 	 */
-	start(registration) {
+	async start(registration) {
 		logger.info(`Starting application=${registration.appName} by OS service...`);
 		this._serviceAdapter.start(registration.execution.commandName);
 		logger.info(`Started application=${registration.appName}`);
+
+		return Promise.resolve(DeploymentStatus.UNKNOWN_STARTED);
 	}
 
 	/**
@@ -30,10 +33,12 @@ export default class ServiceDeploymentHandler extends AbstractFilesystemDeployme
 	 *
 	 * @param registration AppRegistration object containing information about the application to be stopped
 	 */
-	stop(registration) {
+	async stop(registration) {
 		logger.info(`Stopping application=${registration.appName} by OS service...`);
 		this._serviceAdapter.stop(registration.execution.commandName);
 		logger.info(`Stopped application=${registration.appName}`);
+
+		return Promise.resolve(DeploymentStatus.STOPPED);
 	}
 
 	/**
@@ -45,5 +50,7 @@ export default class ServiceDeploymentHandler extends AbstractFilesystemDeployme
 		logger.info(`Restarting application=${registration.appName} by OS service...`);
 		this._serviceAdapter.restart(registration.execution.commandName);
 		logger.info(`Restarted application=${registration.appName}`);
+
+		return Promise.resolve(DeploymentStatus.UNKNOWN_STARTED);
 	}
 }
