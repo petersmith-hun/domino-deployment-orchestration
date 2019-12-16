@@ -20,7 +20,7 @@ export default class AbstractDeploymentHandler {
 	 * @param registration AppRegistration object containing information about the application to be deployed
 	 * @param version version of the application to be deployed
 	 */
-	deploy(registration, version) {
+	async deploy(registration, version) {
 		throw new Error("Not implemented operation");
 	}
 

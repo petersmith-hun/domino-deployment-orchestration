@@ -114,7 +114,7 @@ export default class ExpressMiddlewareProvider {
 	 */
 	defaultErrorHandler(err, req, resp, next) {
 
-		let status = HTTP_STATUS_INTERNAL_SERVER_ERROR;
+		let status;
 		if (err instanceof NonAcceptableMimeTypeError || err instanceof NonRegisteredAppError) {
 			status = HTTP_STATUS_NOT_ACCEPTABLE;
 		} else if (err instanceof AlreadyExistingExecutableError) {

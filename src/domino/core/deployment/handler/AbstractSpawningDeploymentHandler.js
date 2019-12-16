@@ -10,7 +10,7 @@ const logger = LoggerFactory.createLogger("AbstractSpawningDeploymentHandler");
  * Started processes are unreferenced right after starting them so stopping Domino would not stop the spawned processes.
  * However these deployment handlers should store the reference to the spawned processes (done in this class), so they can stop them on request.
  */
-export default class AbstractSpawningDeploymentHandler extends AbstractFilesystemDeploymentHandler{
+export default class AbstractSpawningDeploymentHandler extends AbstractFilesystemDeploymentHandler {
 
 	constructor(filenameUtility, executorUserRegistry, executableBinaryHandler, configurationProvider) {
 		super(filenameUtility, executorUserRegistry, configurationProvider);

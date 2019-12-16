@@ -1,4 +1,4 @@
-import BaseController, {HTTP_STATUS_CREATED} from "./BaseController";
+import BaseController from "./BaseController";
 import LoggerFactory from "../../helper/LoggerFactory";
 import {DeploymentStatus} from "../../core/domain/DeploymentStatus";
 
