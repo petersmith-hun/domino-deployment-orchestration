@@ -1,5 +1,6 @@
 import AbstractFilesystemDeploymentHandler from "./AbstractFilesystemDeploymentHandler";
 import LoggerFactory from "../../../helper/LoggerFactory";
+import {DeploymentStatus} from "../../domain/DeploymentStatus";
 
 const logger = LoggerFactory.createLogger("AbstractSpawningDeploymentHandler");
 
@@ -9,7 +10,7 @@ const logger = LoggerFactory.createLogger("AbstractSpawningDeploymentHandler");
  * Started processes are unreferenced right after starting them so stopping Domino would not stop the spawned processes.
  * However these deployment handlers should store the reference to the spawned processes (done in this class), so they can stop them on request.
  */
-export default class AbstractSpawningDeploymentHandler extends AbstractFilesystemDeploymentHandler{
+export default class AbstractSpawningDeploymentHandler extends AbstractFilesystemDeploymentHandler {
 
 	constructor(filenameUtility, executorUserRegistry, executableBinaryHandler, configurationProvider) {
 		super(filenameUtility, executorUserRegistry, configurationProvider);
@@ -23,19 +24,23 @@ export default class AbstractSpawningDeploymentHandler extends AbstractFilesyste
 	 *
 	 * @param registration AppRegistration object containing application information
 	 */
-	start(registration) {
+	async start(registration) {
 
 		logger.info(`Starting application=${registration.appName}...`);
 
+		let startStatus = DeploymentStatus.UNKNOWN_STARTED;
 		try {
 			const spawnParameters = this._prepareSpawnParameters(registration);
-			this._processes[registration.appName] = this._executableBinaryHandler.spawnProcess(spawnParameters);
+			this._processes[registration.appName] = await this._executableBinaryHandler.spawnProcess(spawnParameters);
 
 			logger.info(`Started application=${registration.appName} with PID=${this._processes[registration.appName].pid}`);
 			this._processes[registration.appName].unref();
 		} catch (e) {
 			logger.error(`Failed to spawn process for application=${registration.appName} - reason='${e.message}'`);
+			startStatus = DeploymentStatus.START_FAILURE;
 		}
+
+		return Promise.resolve(startStatus);
 	}
 
 	/**
@@ -43,11 +48,15 @@ export default class AbstractSpawningDeploymentHandler extends AbstractFilesyste
 	 *
 	 * @param registration AppRegistration object containing application information
 	 */
-	stop(registration) {
+	async stop(registration) {
 
 		logger.info(`Stopping application=${registration.appName}...`);
-		this._executableBinaryHandler.killProcess(this._processes[registration.appName], registration);
-		this._processes[registration.appName] = null;
+		const stopStatus = await this._executableBinaryHandler.killProcess(this._processes[registration.appName], registration);
+		if (stopStatus === DeploymentStatus.STOPPED) {
+			this._processes[registration.appName] = null;
+		}
+
+		return Promise.resolve(stopStatus);
 	}
 
 	/**

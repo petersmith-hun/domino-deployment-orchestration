@@ -1,6 +1,7 @@
 import {afterEach, before, describe, it} from "mocha";
 import AppRegistration from "../../../../../src/domino/core/domain/AppRegistrationDomain";
 import * as mockery from "mockery";
+import {DeploymentStatus} from "../../../../../src/domino/core/domain/DeploymentStatus";
 const assert = require('chai').assert;
 
 describe("Unit tests for HealthCheckProvider", () => {
@@ -30,7 +31,7 @@ describe("Unit tests for HealthCheckProvider", () => {
 			const result = await healthCheckProvider.executeHealthCheck(registration);
 
 			// then
-			assert.equal(result, true);
+			assert.equal(result, DeploymentStatus.HEALTH_CHECK_OK);
 		});
 
 		it("should try health-check at most 3 times with eventual success", async () => {
@@ -44,7 +45,7 @@ describe("Unit tests for HealthCheckProvider", () => {
 			const result = await healthCheckProvider.executeHealthCheck(registration);
 
 			// then
-			assert.equal(result, true);
+			assert.equal(result, DeploymentStatus.HEALTH_CHECK_OK);
 		});
 
 		it("should health-check exceed retry limit and fail", async () => {
@@ -58,7 +59,7 @@ describe("Unit tests for HealthCheckProvider", () => {
 			const result = await healthCheckProvider.executeHealthCheck(registration);
 
 			// then
-			assert.equal(result, false);
+			assert.equal(result, DeploymentStatus.HEALTH_CHECK_FAILURE);
 		});
 
 		it("should skip health-check when disabled and immediately return with success", async () => {
@@ -72,7 +73,7 @@ describe("Unit tests for HealthCheckProvider", () => {
 			const result = await healthCheckProvider.executeHealthCheck(registration);
 
 			// then
-			assert.equal(result, true);
+			assert.equal(result, DeploymentStatus.UNKNOWN_STARTED);
 		});
 	});
 

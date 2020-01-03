@@ -22,26 +22,44 @@ export default class ControllerRegistrations {
 			.use((req, resp, next) => this._expressMiddlewareProvider.jwtVerification(req, resp, next))
 			.use((req, resp, next) => this._expressMiddlewareProvider.callStartMarker(req, resp, next));
 
+		const uploadController = this._assertAndReturnController("upload");
+		const lifecycleController = this._assertAndReturnController("lifecycle");
+		const authenticationController = this._assertAndReturnController("auth");
+
 		// upload controller registration
 		if (this._storageConfig["enable-upload"]) {
 			expressApp
 				.post("/upload/:app/:version", this._multer.single("executable"),
-					(req, resp) => this._controllerMap.get("upload").uploadExecutable(req, resp))
+					this._wrapAsyncError(async (req, resp) => uploadController.uploadExecutable(req, resp)))
 				.use((err, req, resp, next) => this._expressMiddlewareProvider.defaultErrorHandler(err, req, resp, next));
 		}
 
 		// lifecycle controller registrations
 		expressApp
-			.put("/lifecycle/:app/deploy", (req, resp) => this._controllerMap.get("lifecycle").deploy(req, resp))
-			.put("/lifecycle/:app/deploy/:version", (req, resp) => this._controllerMap.get("lifecycle").deploy(req, resp))
-			.put("/lifecycle/:app/start", (req, resp) => this._controllerMap.get("lifecycle").start(req, resp))
-			.put("/lifecycle/:app/restart", (req, resp) => this._controllerMap.get("lifecycle").restart(req, resp))
-			.delete("/lifecycle/:app/stop", (req, resp) => this._controllerMap.get("lifecycle").stop(req, resp))
+			.put("/lifecycle/:app/deploy", this._wrapAsyncError(async (req, resp) => lifecycleController.deploy(req, resp)))
+			.put("/lifecycle/:app/deploy/:version", this._wrapAsyncError(async (req, resp) => lifecycleController.deploy(req, resp)))
+			.put("/lifecycle/:app/start", this._wrapAsyncError(async (req, resp) => lifecycleController.start(req, resp)))
+			.put("/lifecycle/:app/restart", this._wrapAsyncError(async (req, resp) => lifecycleController.restart(req, resp)))
+			.delete("/lifecycle/:app/stop", this._wrapAsyncError(async (req, resp) => lifecycleController.stop(req, resp)))
 			.use((err, req, resp, next) => this._expressMiddlewareProvider.defaultErrorHandler(err, req, resp, next));
 
 		// authentication controller registrations
 		expressApp
-			.post("/claim-token", (req, resp) => this._controllerMap.get("auth").claimToken(req, resp))
+			.post("/claim-token", (req, resp) => authenticationController.claimToken(req, resp))
 			.use((err, req, resp, next) => this._expressMiddlewareProvider.defaultErrorHandler(err, req, resp, next));
+	}
+
+	_assertAndReturnController(controllerName) {
+
+		const controller = this._controllerMap.get(controllerName);
+		if (!controller) {
+			throw new Error(`Failed to register controller=${controllerName} - stopping.`);
+		}
+
+		return controller;
+	}
+
+	_wrapAsyncError(endpointRegistration) {
+		return this._expressMiddlewareProvider.asyncErrorHandler(endpointRegistration);
 	}
 }

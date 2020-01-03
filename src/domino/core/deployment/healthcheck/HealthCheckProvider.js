@@ -1,5 +1,6 @@
 import LoggerFactory from "../../../helper/LoggerFactory";
 import rp from "request-promise";
+import {DeploymentStatus} from "../../domain/DeploymentStatus";
 
 const logger = LoggerFactory.createLogger("HealthCheckProvider");
 
@@ -14,14 +15,14 @@ export default class HealthCheckProvider {
 	 * @param registration AppRegistration object containing health-check parameters.
 	 * @returns {Promise} object wrapping the health-check execution
 	 */
-	executeHealthCheck(registration) {
+	async executeHealthCheck(registration) {
 		logger.info(`Executing health-check for app=${registration.appName} (delay: ${registration.healthCheck.delay} ms; response timeout: ${registration.healthCheck.timeout} ms)`);
 
-		return registration.healthCheck.enabled
+		return await registration.healthCheck.enabled
 			? new Promise(resolve => this._doExecuteHealthCheck(registration, registration.healthCheck.maxAttempts, resolve))
 			: (() => {
 				logger.info(`Health-check execution for app=${registration.appName} is disabled - skipping`);
-				return Promise.resolve(true);
+				return Promise.resolve(DeploymentStatus.UNKNOWN_STARTED);
 			})();
 	}
 
@@ -51,13 +52,13 @@ export default class HealthCheckProvider {
 			logger.warn(`Health-check returned with status=${status}`);
 			if (attemptsLeft === 0) {
 				logger.error(`Number of health-check attempts reached limit=${registration.healthCheck.maxAttempts} - app is supposedly down`);
-				this._stopLoop(promiseResolution, callLoopHandler, false);
+				this._stopLoop(promiseResolution, callLoopHandler, DeploymentStatus.HEALTH_CHECK_FAILURE);
 			} else {
 				logger.info(`Waiting for health-check... (${attemptsLeft} attempts left)`);
 			}
 		} else {
 			logger.info(`Application=${registration.appName} reports successful health-check.`);
-			this._stopLoop(promiseResolution, callLoopHandler, true);
+			this._stopLoop(promiseResolution, callLoopHandler, DeploymentStatus.HEALTH_CHECK_OK);
 		}
 	}
 

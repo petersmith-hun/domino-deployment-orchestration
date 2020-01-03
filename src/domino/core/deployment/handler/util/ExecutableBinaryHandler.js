@@ -1,6 +1,7 @@
 import * as proc from "child_process";
 import {snapshot} from "process-list";
 import LoggerFactory from "../../../../helper/LoggerFactory";
+import {DeploymentStatus} from "../../../domain/DeploymentStatus";
 
 const logger = LoggerFactory.createLogger('ExecutableBinaryHandler');
 
@@ -22,7 +23,7 @@ export default class ExecutableBinaryHandler {
 	 * @param spawnParameters wrapper object for the parameters described above
 	 * @returns {ChildProcessWithoutNullStreams} process object
 	 */
-	spawnProcess(spawnParameters) {
+	async spawnProcess(spawnParameters) {
 
 		return proc.spawn(spawnParameters.executablePath, spawnParameters.args, {
 			uid: spawnParameters.userID,
@@ -43,22 +44,30 @@ export default class ExecutableBinaryHandler {
 	 * @param runningProcess process object (nullable)
 	 * @param registration AppRegistration object, with which the process can be looked up if PID is missing
 	 */
-	killProcess(runningProcess, registration) {
+	async killProcess(runningProcess, registration) {
 
-		if (runningProcess) {
-			this._killProcessGroup(runningProcess.pid);
-		} else {
-			logger.warn(`PID not available for ${registration.appName}, looking up running process...`);
+		return new Promise(resolve => {
+			if (runningProcess) {
+				this._killProcessGroup(runningProcess.pid, resolve);
+			} else {
+				logger.warn(`PID not available for ${registration.appName}, looking up running process...`);
 
-			this._findProcess(registration).then(foundProcess => {
-				if (foundProcess) {
-					logger.info(`Found PID=${foundProcess.pid} for cmdline='${foundProcess.cmdline}'`);
-					this._killProcessGroup(foundProcess.pid);
-				} else {
-					logger.warn(`Failed to stop process for appName=${registration.appName} - might be a first-time execution?`);
-				}
-			});
-		}
+				this._findProcess(registration)
+					.then(foundProcess => {
+						if (foundProcess) {
+							logger.info(`Found PID=${foundProcess.pid} for cmdline='${foundProcess.cmdline}'`);
+							this._killProcessGroup(foundProcess.pid, resolve);
+						} else {
+							logger.warn(`Failed to stop process for appName=${registration.appName} - might be a first-time execution?`);
+							resolve(DeploymentStatus.UNKNOWN_STOPPED);
+						}
+					})
+					.catch(reason => {
+						logger.warn(`Failed to find running process for appName=${registration.appName} - reason=${reason.toString()}`);
+						resolve(DeploymentStatus.STOP_FAILURE);
+					});
+			}
+		});
 	}
 
 	_findProcess(registration) {
@@ -71,13 +80,15 @@ export default class ExecutableBinaryHandler {
 		})();
 	}
 
-	_killProcessGroup(parentPID) {
+	_killProcessGroup(parentPID, promiseResolution) {
 
 		try {
 			process.kill(-parentPID);
 			logger.info(`Kill signal sent to the process group of PID=${parentPID}`);
+			promiseResolution(DeploymentStatus.STOPPED);
 		} catch (e) {
 			logger.error(`Failed to kill process of PID=${parentPID} - reason='${e.message}'`);
+			promiseResolution(DeploymentStatus.STOP_FAILURE);
 		}
 	}
 }

@@ -85,6 +85,19 @@ export default class ExpressMiddlewareProvider {
 	}
 
 	/**
+	 * Error handler for async endpoints.
+	 * Wraps every endpoints as a Promise, passing forward every request and catching every exception, passing up to Express error handlers.
+	 *
+	 * @param endpointRegistration async endpoint registration to be handled by this error handler
+	 * @returns {function(*=, *=, *=): Promise<unknown>} error handler Promise
+	 */
+	asyncErrorHandler(endpointRegistration) {
+		return (req, resp, next) => Promise
+			.resolve(endpointRegistration(req, resp, next))
+			.catch(next);
+	}
+
+	/**
 	 * Handles possible errors.
 	 * Returns the following HTTP statuses:
 	 *  - 400 (Bad request): request validation failure
@@ -101,7 +114,7 @@ export default class ExpressMiddlewareProvider {
 	 */
 	defaultErrorHandler(err, req, resp, next) {
 
-		let status = HTTP_STATUS_INTERNAL_SERVER_ERROR;
+		let status;
 		if (err instanceof NonAcceptableMimeTypeError || err instanceof NonRegisteredAppError) {
 			status = HTTP_STATUS_NOT_ACCEPTABLE;
 		} else if (err instanceof AlreadyExistingExecutableError) {

@@ -1,5 +1,6 @@
 import ExecutableVersion from "../domain/ExecutableVersion";
 import LoggerFactory from "../../helper/LoggerFactory";
+import {DeploymentStatus} from "../domain/DeploymentStatus";
 
 const logger = LoggerFactory.createLogger("DeploymentService");
 
@@ -20,15 +21,21 @@ export default class DeploymentService {
 	 *
 	 * @param app application to be deployed
 	 */
-	deployLatest(app) {
+	async deployLatest(app) {
+
 		const latestVersion = this._executableVersionUtility.findLatestVersion(app);
+		let deploymentResult;
 		if (latestVersion) {
-			this.deploy(app, latestVersion);
+			deploymentResult = await this.deploy(app, latestVersion);
 		} else {
 			logger.warn(`No appropriate version of app=${app} could be found - rejecting deployment`);
+			deploymentResult = Promise.resolve({
+				status: DeploymentStatus.DEPLOY_FAILED_MISSING_VERSION,
+				version: "latest"
+			});
 		}
 
-		return latestVersion;
+		return deploymentResult;
 	}
 
 	/**
@@ -37,13 +44,13 @@ export default class DeploymentService {
 	 * @param app application to be deployed
 	 * @param version version of the application to be deployed
 	 */
-	deploy(app, version) {
+	async deploy(app, version) {
 
 		const parsedVersion = version instanceof ExecutableVersion
 			? version
 			: new ExecutableVersion(version);
 
-		this._executeOperation(app, (handler, registration) => handler.deploy(registration, parsedVersion));
+		return this._executeOperation(app, async (handler, registration) => await handler.deploy(registration, parsedVersion));
 	}
 
 	/**
@@ -51,10 +58,9 @@ export default class DeploymentService {
 	 *
 	 * @param app application to be started
 	 */
-	start(app) {
-		this._executeOperation(app, (handler, registration) => {
-			handler.start(registration);
-			this._healthCheckProvider.executeHealthCheck(registration);
+	async start(app) {
+		return this._executeOperation(app, async (handler, registration) => {
+			return await this._conditionallyExecuteHealthCheck(registration, await handler.start(registration));
 		});
 	}
 
@@ -63,8 +69,8 @@ export default class DeploymentService {
 	 *
 	 * @param app application to be stopped
 	 */
-	stop(app) {
-		this._executeOperation(app, (handler, registration) => handler.stop(registration));
+	async stop(app) {
+		return await this._executeOperation(app, async (handler, registration) => await handler.stop(registration));
 	}
 
 	/**
@@ -72,23 +78,31 @@ export default class DeploymentService {
 	 *
 	 * @param app application to be restarted
 	 */
-	restart(app) {
-		this._executeOperation(app, (handler, registration) => {
-			handler.restart(registration);
-			this._healthCheckProvider.executeHealthCheck(registration);
+	async restart(app) {
+		return this._executeOperation(app, async (handler, registration) => {
+			return await this._conditionallyExecuteHealthCheck(registration, await handler.restart(registration));
 		});
 	}
 
-	_executeOperation(app, operation) {
+	async _executeOperation(app, operation) {
 
 		const registration = this._getRegistration(app);
 		const handler = this._deploymentHandlerRegistry
 			.getHandler(registration);
 
-		operation(handler, registration);
+		return operation(handler, registration);
 	}
 
 	_getRegistration(app) {
 		return this._appRegistrationRegistry.getRegistration(app);
+	}
+
+	async _conditionallyExecuteHealthCheck(registration, startStatus) {
+
+		if (startStatus === DeploymentStatus.UNKNOWN_STARTED) {
+			startStatus = await this._healthCheckProvider.executeHealthCheck(registration);
+		}
+
+		return startStatus;
 	}
 }

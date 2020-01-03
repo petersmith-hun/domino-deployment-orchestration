@@ -1,6 +1,8 @@
 import LoggerFactory from "../../../helper/LoggerFactory";
+import {DeploymentStatus} from "../../domain/DeploymentStatus";
 
 const logger = LoggerFactory.createLogger("AbstractDeploymentHandler");
+const _RESTARTABLE_STATUSES = [DeploymentStatus.STOPPED, DeploymentStatus.UNKNOWN_STOPPED];
 
 /**
  * Base (abstract) deployment handler component (every method throws Error, so they must be overridden).
@@ -18,7 +20,7 @@ export default class AbstractDeploymentHandler {
 	 * @param registration AppRegistration object containing information about the application to be deployed
 	 * @param version version of the application to be deployed
 	 */
-	deploy(registration, version) {
+	async deploy(registration, version) {
 		throw new Error("Not implemented operation");
 	}
 
@@ -27,7 +29,7 @@ export default class AbstractDeploymentHandler {
 	 *
 	 * @param registration AppRegistration object containing information about the application to be started
 	 */
-	start(registration) {
+	async start(registration) {
 		throw new Error("Not implemented operation");
 	}
 
@@ -36,7 +38,7 @@ export default class AbstractDeploymentHandler {
 	 *
 	 * @param registration AppRegistration object containing information about the application to be stopped
 	 */
-	stop(registration) {
+	async stop(registration) {
 		throw new Error("Not implemented operation");
 	}
 
@@ -46,9 +48,15 @@ export default class AbstractDeploymentHandler {
 	 *
 	 * @param registration AppRegistration object containing information about the application to be restarted
 	 */
-	restart(registration) {
-		this.stop(registration);
-		logger.info(`Waiting for the application to stop... Continuing after ${this._startTimeout} ms`);
-		setTimeout(() => this.start(registration), this._startTimeout);
+	async restart(registration) {
+
+		logger.info(`Waiting for the application=${registration.appName} to stop...`);
+		let stopStatus = await this.stop(registration);
+		if (_RESTARTABLE_STATUSES.includes(stopStatus)) {
+			logger.info(`Application=${registration.appName} stopped. Waiting ${this._startTimeout} ms to restart`);
+			stopStatus = await new Promise(resolve => setTimeout(async () => resolve(await this.start(registration)), this._startTimeout));
+		}
+
+		return stopStatus;
 	}
 }
