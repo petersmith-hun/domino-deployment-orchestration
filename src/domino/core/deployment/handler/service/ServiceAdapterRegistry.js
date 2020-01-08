@@ -5,7 +5,7 @@ const logger = LoggerFactory.createLogger('ServiceAdapterRegistry');
 /**
  * Registry handling the supported service adapters.
  *
- * To select a service handler (depends on the OS used), 'domino.service-handler'
+ * To select a service handler (depends on the OS used), 'domino.system.spawn-control.service-handler'
  * parameter should be specified in the default config.
  */
 export default class ServiceAdapterRegistry {

@@ -126,7 +126,7 @@ export default class ExpressMiddlewareProvider {
 		} else if (err instanceof AuthenticationError) {
 			status = HTTP_STATUS_FORBIDDEN;
 		} else {
-			logger.error("Unhandled error occurred while uploading file\n", err);
+			logger.error("Unhandled error occurred\n", err);
 			status = HTTP_STATUS_INTERNAL_SERVER_ERROR;
 		}
 

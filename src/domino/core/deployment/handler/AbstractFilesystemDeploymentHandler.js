@@ -45,7 +45,7 @@ export default class AbstractFilesystemDeploymentHandler extends AbstractDeploym
 			logger.info(`Successfully deployed app=${registration.appName} from=${source} to=${target}`);
 			deploymentResult = this._prepareDeploymentResult(version, true);
 		} catch (e) {
-			logger.error(`Failed to deploy app=${registration.appName} from=${source} to=${target}, reason=${e.message}`)
+			logger.error(`Failed to deploy app=${registration.appName} from=${source} to=${target}, reason=${e.message}`);
 			deploymentResult = this._prepareDeploymentResult(version, false);
 		}
 
@@ -80,7 +80,7 @@ export default class AbstractFilesystemDeploymentHandler extends AbstractDeploym
 			status: successful
 				? DeploymentStatus.DEPLOYED
 				: DeploymentStatus.DEPLOY_FAILED_UNKNOWN,
-			version: version
+			version: version.getFormattedVersion()
 		});
 	}
 }

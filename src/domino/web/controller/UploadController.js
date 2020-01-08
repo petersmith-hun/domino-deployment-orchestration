@@ -35,7 +35,7 @@ export default class UploadController extends BaseController {
 
 		let uploadStatus;
 		if (req.query.autodeploy) {
-			uploadStatus = await this._deploymentService.deploy(app, version).status;
+			uploadStatus = (await this._deploymentService.deploy(app, version)).status;
 
 			if (uploadStatus === DeploymentStatus.DEPLOYED && req.query.autostart) {
 				uploadStatus = await this._deploymentService.restart(app);

@@ -35,7 +35,7 @@ export default class ConfigurationProvider {
 	 * @returns registrations file path
 	 */
 	getRegistrationsFilePath() {
-		return config.get("domino.registrations-path");
+		return config.get("domino.system.registrations-path");
 	}
 
 	/**
@@ -44,7 +44,7 @@ export default class ConfigurationProvider {
 	 * @returns application start-up timeout value in ms
 	 */
 	getStartTimeout() {
-		return config.get("domino.start-timeout");
+		return config.get("domino.system.spawn-control.start-timeout");
 	}
 
 	/**
@@ -53,7 +53,7 @@ export default class ConfigurationProvider {
 	 * @returns the name of the selected service handler
 	 */
 	getServiceHandler() {
-		return config.get("domino.service-handler");
+		return config.get("domino.system.spawn-control.service-handler");
 	}
 
 	/**
