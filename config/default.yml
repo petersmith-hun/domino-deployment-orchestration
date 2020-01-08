@@ -1,20 +1,79 @@
 domino:
-  registrations-path: config/domino-registrations.yml
-  logfile: logs/domino.log
+
+  # basic system configuration
+  system:
+
+    # application registrations configuration file path
+    registrations-path: config/domino-registrations.yml
+
+    # logging configuration
+    logging:
+
+      # log file path (remove or comment to disable file-logging)
+      logfile: logs/domino.log
+
+      # configuration of log exposure to TinyLogProcessor (TLP) service (via async HTTP calls)
+      tlp-logging:
+
+        # enable/disable TLP exposure
+        enabled: true
+
+        # TLP host address
+        host: "http://host.docker.internal:8084/tlp"
+
+    # application spawning settings
+    spawn-control:
+
+      # service handler implementation to be used for spawning applications via services
+      # currently supported options:
+      #  - systemd (Debian/Ubuntu default)
+      service-handler: systemd
+
+      # delay after stopping and before starting up an application (in milliseconds)
+      start-timeout: 3000
+
+  # Domino internal web-server configuration
+  server:
+
+    # server will be listening on this address
+    host: localhost
+
+    # server will be listening on this port
+    port: 9987
+
+  # application storage configuration
   storage:
+
+    # enable/disable binary upload via REST (POST /upload)
     enable-upload: true
+
+    # list of accepted MIME types of the binaries to be uploaded
     accepted-mime-types:
       - application/java-archive
+
+    # maximum size of uploaded binary
     max-size: 100MB
+
+    # storage path where uploaded binaries will be stored
     path: storage/
-  server:
-    host: localhost
-    port: 9987
-  service-handler: systemd
-  start-timeout: 3000
+
+  # management account authentication configuration
   auth:
+
+    # authentication JWT token expiration (in ms (https://github.com/zeit/ms#readme) utility compatible format)
     expiration: "30 days"
+
+    # JWT signing private key
     jwt-private-key: <PROVIDE_ME>
+
+    # management account username
     username: <PROVIDE_ME>
+
+    # management account password
+    # password must be provided in BCrypt encoded format
+    # Domino CLI provides utility for password encryption
     password: <PROVIDE_ME>
+
+    # list of remote host addresses from where access to Domino is allowed
+    # specify ALL keyword to disable remote host checking
     allowed-sources: ALL
