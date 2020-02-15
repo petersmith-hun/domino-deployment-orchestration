@@ -1,4 +1,5 @@
 .idea
+.nyc_output
 docker/config/
 node_modules/
 logs/

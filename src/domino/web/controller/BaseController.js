@@ -35,7 +35,7 @@ export default class BaseController {
 		let processingTime = 0;
 		if (req.callStartTime) {
 			let hrTimeDifference = process.hrtime(req.callStartTime);
-			processingTime = parseInt(hrTimeDifference[0] * SEC_TO_MS_MULTIPLIER + hrTimeDifference[1] / NS_TO_MS_DIVISOR);
+			processingTime = Math.round(hrTimeDifference[0] * SEC_TO_MS_MULTIPLIER + hrTimeDifference[1] / NS_TO_MS_DIVISOR);
 		}
 
 		return processingTime;

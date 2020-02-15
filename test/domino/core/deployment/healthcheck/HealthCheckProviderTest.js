@@ -1,8 +1,11 @@
 import {afterEach, before, describe, it} from "mocha";
-import AppRegistration from "../../../../../src/domino/core/domain/AppRegistrationDomain";
 import * as mockery from "mockery";
+import {assert} from "chai";
+
+import AppRegistration from "../../../../../src/domino/core/domain/AppRegistrationDomain";
 import {DeploymentStatus} from "../../../../../src/domino/core/domain/DeploymentStatus";
-const assert = require('chai').assert;
+
+const _ASYNC_TIMEOUT = 5000;
 
 describe("Unit tests for HealthCheckProvider", () => {
 
@@ -32,7 +35,7 @@ describe("Unit tests for HealthCheckProvider", () => {
 
 			// then
 			assert.equal(result, DeploymentStatus.HEALTH_CHECK_OK);
-		});
+		}).timeout(_ASYNC_TIMEOUT);
 
 		it("should try health-check at most 3 times with eventual success", async () => {
 
@@ -46,7 +49,7 @@ describe("Unit tests for HealthCheckProvider", () => {
 
 			// then
 			assert.equal(result, DeploymentStatus.HEALTH_CHECK_OK);
-		});
+		}).timeout(_ASYNC_TIMEOUT);
 
 		it("should health-check exceed retry limit and fail", async () => {
 
@@ -60,7 +63,7 @@ describe("Unit tests for HealthCheckProvider", () => {
 
 			// then
 			assert.equal(result, DeploymentStatus.HEALTH_CHECK_FAILURE);
-		});
+		}).timeout(_ASYNC_TIMEOUT);
 
 		it("should skip health-check when disabled and immediately return with success", async () => {
 
@@ -75,6 +78,20 @@ describe("Unit tests for HealthCheckProvider", () => {
 			// then
 			assert.equal(result, DeploymentStatus.UNKNOWN_STARTED);
 		});
+
+		it("should return with failure in case of consecutive Promise.reject responses reaching limit", async () => {
+
+			// given
+			const healthCheckProvider = _prepareMockedHealthCheckProviderWithRejection();
+			const configuration = _prepareHealthCheckConfiguration(true);
+			const registration = new AppRegistration("testApp-scenario5", configuration);
+
+			// when
+			const result = await healthCheckProvider.executeHealthCheck(registration);
+
+			// then
+			assert.equal(result, DeploymentStatus.HEALTH_CHECK_FAILURE);
+		});
 	});
 
 	function _prepareMockedHealthCheckProvider(...response) {
@@ -85,6 +102,16 @@ describe("Unit tests for HealthCheckProvider", () => {
 			return Promise.resolve({
 				statusCode: response[callCount++]
 			});
+		});
+
+		return new (require("../../../../../src/domino/core/deployment/healthcheck/HealthCheckProvider.js").default)();
+	}
+
+	function _prepareMockedHealthCheckProviderWithRejection() {
+
+		mockery.deregisterAll();
+		mockery.registerMock("request-promise", () => {
+			return Promise.reject(new Error("Failed to call app"));
 		});
 
 		return new (require("../../../../../src/domino/core/deployment/healthcheck/HealthCheckProvider.js").default)();

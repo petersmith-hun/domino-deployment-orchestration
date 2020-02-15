@@ -1,5 +1,5 @@
 import AbstractServiceAdapter from "./AbstractServiceAdapter";
-import * as proc from "child_process";
+import child_process from "child_process";
 
 const _COMMAND_START = "start";
 const _COMMAND_STOP = "stop";
@@ -54,6 +54,6 @@ export default class SystemdServiceAdapter extends AbstractServiceAdapter {
 			throw Error(`Prohibited command=${command} called for service=${serviceName}`);
 		}
 
-		proc.execSync(`service ${serviceName} ${command}`);
+		child_process.execSync(`service ${serviceName} ${command}`);
 	}
 }

@@ -1,4 +1,4 @@
-import * as proc from "child_process";
+import child_process from "child_process";
 
 /**
  * This registry stores the registered executor (service-) users.
@@ -7,7 +7,7 @@ import * as proc from "child_process";
 export default class ExecutorUserRegistry {
 
 	constructor() {
-		this._users = [];
+		this._users = new Map();
 	}
 
 	/**
@@ -24,8 +24,8 @@ export default class ExecutorUserRegistry {
 	registerExecutorUsers(registrations) {
 		registrations.forEach((registration) => {
 			const username = registration.execution.user;
-			if (!this._users[username]) {
-				this._users[username] = this._findUserID(username);
+			if (!this._users.get(username)) {
+				this._users.set(username, this._findUserID(username));
 			}
 		});
 	}
@@ -39,7 +39,7 @@ export default class ExecutorUserRegistry {
 	 */
 	getUserID(registration) {
 
-		const userID = this._users[registration.execution.user];
+		const userID = this._users.get(registration.execution.user);
 		if (!userID) {
 			throw new Error(`User '${registration.execution.user} is not registered`);
 		}
@@ -58,7 +58,7 @@ export default class ExecutorUserRegistry {
 		}
 
 		try {
-			const idCallResult = proc.execSync(`id -u ${username}`).toString();
+			const idCallResult = child_process.execSync(`id -u ${username}`).toString();
 			return parseInt(idCallResult);
 		} catch (e) {
 			throw new Error(`Provider user with username '${username}' does not exist`);

@@ -1,4 +1,4 @@
-import BaseController, {HTTP_STATUS_ACCEPTED, HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_CREATED} from "./BaseController";
+import BaseController from "./BaseController";
 import LoggerFactory from "../../helper/LoggerFactory";
 import {DeploymentStatus} from "../../core/domain/DeploymentStatus";
 
@@ -27,24 +27,20 @@ export default class LifecycleController extends BaseController {
 
 		const version = req.params.version;
 		const app = req.params.app;
-		const deploymentStatus = await this._executeWithValidation(req, async () => {
+		const deploymentResponse = await this._executeWithValidation(req, async () => {
 
-			let deploymentStatus;
+			let deploymentResponse;
 			if (version) {
-				deploymentStatus = await this._deploymentService.deploy(app, version);
+				deploymentResponse = await this._deploymentService.deploy(app, version);
 			} else {
-				deploymentStatus = await this._deploymentService.deployLatest(app);
+				deploymentResponse = await this._deploymentService.deployLatest(app);
 			}
 
-			return deploymentStatus;
-		});
+			return deploymentResponse;
+		}, (response) => response);
 
-		resp.status(this.mapDeploymentStatusToStatusCode(deploymentStatus.status))
-			.send({
-				message: `Deployed version=${version} in ${this.getProcessingTime(req)} ms`,
-				status: deploymentStatus.status,
-				version: deploymentStatus.version
-			});
+		resp.status(this.mapDeploymentStatusToStatusCode(deploymentResponse.status))
+			.send(this._generateDeployResponse(req, deploymentResponse));
 	}
 
 	/**
@@ -80,17 +76,17 @@ export default class LifecycleController extends BaseController {
 		return this._executeLifecycleCommand(req, resp, (app) => this._deploymentService.restart(app));
 	}
 
-	async _executeWithValidation(req, commandSupplier) {
+	async _executeWithValidation(req, commandSupplier, validationResponseMapper = (response) => response.status) {
 
-		let deploymentStatus;
+		let deploymentResponse;
 		if (!this._requestValidator.isLifecycleRequestValid(req.params)) {
 			logger.warn("Validation failed for deployment request");
-			deploymentStatus = DeploymentStatus.INVALID_REQUEST;
+			deploymentResponse = validationResponseMapper({status: DeploymentStatus.INVALID_REQUEST});
 		} else {
-			deploymentStatus = await commandSupplier();
+			deploymentResponse = await commandSupplier();
 		}
 
-		return deploymentStatus;
+		return deploymentResponse;
 	}
 
 	async _executeLifecycleCommand(req, resp, commandConsumer) {
@@ -102,5 +98,23 @@ export default class LifecycleController extends BaseController {
 				message: `Processed in ${this.getProcessingTime(req)} ms`,
 				status: deploymentStatus
 			});
+	}
+
+	_generateDeployResponse(req, deploymentResponse) {
+
+		let response;
+		if (deploymentResponse.status === DeploymentStatus.INVALID_REQUEST) {
+			response = {
+				message: `Deployment has failed due to invalid request`,
+			}
+		} else {
+			response = {
+				message: `Deployment has finished for version=${deploymentResponse.version} in ${this.getProcessingTime(req)} ms`,
+				version: deploymentResponse.version
+			};
+		}
+		response.status = deploymentResponse.status;
+
+		return response;
 	}
 }
