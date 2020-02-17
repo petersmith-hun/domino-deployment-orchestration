@@ -24,13 +24,23 @@ export default class DeploymentHandlerRegistry {
 	 */
 	getHandler(registration) {
 
-		const sourceType = registration.source.type.toLowerCase();
-		const executionMode = registration.execution.executionHandler.toLowerCase();
-
 		try {
-			return this._registry[sourceType][executionMode];
+			const sourceType = registration.source.type.toLowerCase();
+			const executionMode = registration.execution.executionHandler.toLowerCase();
+
+			return this._assertExistingHandler(this._registry[sourceType][executionMode]);
 		} catch (e) {
 			throw new UnsupportedDeploymentMode(registration);
 		}
 	}
+
+	_assertExistingHandler(handler) {
+
+		if (typeof handler === "undefined") {
+			throw new Error("Invalid selected handler");
+		}
+
+		return handler;
+	}
 }
+

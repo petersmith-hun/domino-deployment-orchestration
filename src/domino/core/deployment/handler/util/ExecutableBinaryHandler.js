@@ -1,4 +1,4 @@
-import * as proc from "child_process";
+import child_process from "child_process";
 import {snapshot} from "process-list";
 import LoggerFactory from "../../../../helper/LoggerFactory";
 import {DeploymentStatus} from "../../../domain/DeploymentStatus";
@@ -25,13 +25,19 @@ export default class ExecutableBinaryHandler {
 	 */
 	async spawnProcess(spawnParameters) {
 
-		return proc.spawn(spawnParameters.executablePath, spawnParameters.args, {
-			uid: spawnParameters.userID,
-			cwd: spawnParameters.workDirectory,
-			detached: true,
-			stdio: "ignore"
-		}).on("error", err => {
-			logger.error(`Failed to spawn application - reason: ${err.message}`);
+		return new Promise(async (resolve, reject) => {
+
+			const spawnPromise = await child_process.spawn(spawnParameters.executablePath, spawnParameters.args, {
+				uid: spawnParameters.userID,
+				cwd: spawnParameters.workDirectory,
+				detached: true,
+				stdio: "ignore"
+			}).on("error", err => {
+				logger.error(`Failed to spawn application - reason: ${err.message}`);
+				reject(err);
+			});
+
+			return resolve(spawnPromise);
 		});
 	}
 
@@ -87,7 +93,7 @@ export default class ExecutableBinaryHandler {
 			logger.info(`Kill signal sent to the process group of PID=${parentPID}`);
 			promiseResolution(DeploymentStatus.STOPPED);
 		} catch (e) {
-			logger.error(`Failed to kill process of PID=${parentPID} - reason='${e.message}'`);
+			logger.error(`Failed to kill process group of PID=${parentPID} - reason='${e.message}'`);
 			promiseResolution(DeploymentStatus.STOP_FAILURE);
 		}
 	}

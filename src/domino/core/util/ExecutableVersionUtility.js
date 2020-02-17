@@ -25,7 +25,7 @@ export default class ExecutableVersionUtility {
 		const filesInStorage = fs.readdirSync(this._storageConfig.path);
 		const appFiles = this._filterAppFiles(app, filesInStorage);
 
-		return appFiles
+		return appFiles.length > 0
 			? this._doFindLatestVersion(appFiles)
 			: _DEFAULT_VERSION;
 	}

@@ -26,7 +26,7 @@ export default class TLPAppender extends AbstractAppender {
 		const tlpLogMessage = new TLPLogMessage(entry);
 		const request = this._prepareRequest(tlpLogMessage);
 
-		rp(request)
+		rp.post(request)
 			.catch(reason => {
 				console.log(`Failed to send log message to TLP - reason: ${reason.message}`);
 			});

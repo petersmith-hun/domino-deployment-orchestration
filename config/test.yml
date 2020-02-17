@@ -1,0 +1,24 @@
+domino:
+  system:
+    registrations-path: config/domino-registrations.yml
+    logging:
+      tlp-logging:
+        enabled: false
+    spawn-control:
+      service-handler: systemd
+      start-timeout: 3000
+  server:
+    host: localhost
+    port: 9999
+  storage:
+    enable-upload: true
+    accepted-mime-types:
+      - application/java-archive
+    max-size: 100MB
+    path: storage/
+  auth:
+    expiration: "30 days"
+    jwt-private-key: <PROVIDE_ME>
+    username: <PROVIDE_ME>
+    password: <PROVIDE_ME>
+    allowed-sources: ALL

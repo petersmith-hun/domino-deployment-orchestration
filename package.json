@@ -4,7 +4,8 @@
   "description": "Deployment Orchestration for Minor Infrastructures, powered by Node.js",
   "main": "src/domino_esm_start.js",
   "scripts": {
-    "test": "mocha --require babel-core/register --require babel-polyfill test/**/*.js",
+    "test": "mocha --require @babel/register --require @babel/polyfill test/**/*.js",
+    "coverage": "nyc --all --reporter=html --report-dir=.nyc_output/coverage npm run test",
     "start": "node src/domino_esm_start.js"
   },
   "keywords": [],
@@ -30,12 +31,15 @@
     "simple-node-logger": "^18.12.23"
   },
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-register": "^6.26.0",
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.4",
+    "@babel/polyfill": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/register": "^7.8.3",
     "chai": "^4.2.0",
-    "mocha": "^6.2.2",
-    "mockery": "^2.1.0"
+    "mocha": "^7.0.1",
+    "mockery": "^2.1.0",
+    "nyc": "^15.0.0",
+    "sinon": "^8.1.1"
   }
 }
