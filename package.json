@@ -4,7 +4,8 @@
   "description": "Deployment Orchestration for Minor Infrastructures, powered by Node.js",
   "main": "src/domino_esm_start.js",
   "scripts": {
-    "test": "mocha --require @babel/register --require @babel/polyfill test/**/*.js",
+    "test": "env NODE_ENV=test mocha --require @babel/register --require @babel/polyfill test/**/*.js",
+    "test_win": "set NODE_ENV=test&& mocha --require @babel/register --require @babel/polyfill test/**/*.js",
     "coverage": "nyc --all --reporter=html --report-dir=.nyc_output/coverage npm run test",
     "start": "node src/domino_esm_start.js"
   },
@@ -40,6 +41,6 @@
     "mocha": "7.0.1",
     "mockery": "2.1.0",
     "nyc": "15.0.0",
-    "sinon": "8.1.1"
+    "sinon": "9.0.0"
   }
 }
