@@ -137,7 +137,159 @@ Access controls.
 
 # Application registrations
 
-TODO
+An application registration is a description of a deployment "procedure". You need to register all your applications that you'd like to
+have handled by Domino. Currently registration is not possible via REST API (and at this point it is not even planned to become). However
+Domino CLI provides a convenient way to create new or update existing registrations stored in a .yml file located on the path you are supposed
+to have provided while setting up your Domino instance (`domino.system.registrations-path`).
+
+Below you'll find detailed descriptions of all the possible configuration parameters and their requirement-matrix for each of the
+currently supported deployment methods.
+
+ First of all, a registration file should look like this:
+ 
+```yaml
+domino:
+  registrations:
+    <appname1>:
+      source: ...
+      execution: ...
+      health-check: ...
+      runtime: ...
+    <appname2>:
+      source: ...
+      execution: ...
+      health-check: ...
+      runtime: ...
+```
+
+An application name (key of the registration) should conform the following rules:
+ * lowercase alphanumerical letters only (no special characters and numbers);
+ * cannot be an empty string;
+ * with regular expression: `/^[a-z]+$/`.
+ 
+Application name identifies the registration itself and will be used in every lifecycle operation (as a path variable) of the request.
+
+Under each application registrations a configuration map should be placed. The possible configuration parameters are the following:
+
+## Source configuration
+
+Source parameters determine where the application's executable is located and how it should be treated.
+
+| Parameter  | Description                                                                                                                                                                 |
+|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `type`     | Type of the executable. Currently only `FILESYSTEM` is supported, which means the executable is located in the servers's filesystem as a standalone executable binary file. |
+| `home`     | Work directory. Also for `FILESYSTEM`-sourced applications, the executable will be copied in this folder during deployment.                                                 |
+| `resource` | The name of the deployed executable.                                                                                                                                        |
+
+## Execution configuration
+
+Execution parameters determine how the executable should be spun up.
+
+| Parameter      | Description                                                                                                                                                                                             |
+|----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `via`          | Spin up method for the application. For the currently supported types, please find the options below in the Execution types section.                                                                    |
+| `command-name` | In case the application requires an explicit command to be executed to spin it up, that should be provided here. Currently it is only used by the `SERVICE` execution type as the service command name. |
+| `as-user`      | (Usually a service-only) OS user which will execute the application.                                                                                                                                    |
+| `args`         | List of command-line arguments to be passed to the application.                                                                                                                                         |
+
+### Execution types
+* `EXECUTABLE`: spin up the application directly via its executable 
+* `RUNTIME`: spin up the application with the aid of an external runtime environment
+* `SERVICE`: spin up the application via an OS service unit (init.d, systemd, etc.).
+
+## Health-check configuration
+
+It is possible to run a health-check right after the application has been deployed and started up.
+
+| Parameter      | Description                                                                                                                   |
+|----------------|-------------------------------------------------------------------------------------------------------------------------------|
+| `enabled`      | Enables executing health-check. The parameters below can be omitted if you disable health-check.                              |
+| `delay`        | Delay before the first and between the subsequent health-check requests. Must be provided in ms-utility format.               |
+| `timeout`      | Maximum wait time for a single health-check request. Must be provided in ms-utility format.                                   |
+| `max-attempts` | Maximum number of health-check attempts in case of failure. In case an application exceeds this limit, it is considered dead. |
+| `endpoint`     | Health-check endpoint of the application                                                                                      |  
+
+## Runtime configuration
+
+In case your application is configured to be executed via `RUNTIME`, you must select a registered runtime using its name with the `runtime` parameter.
+
+A runtime registration looks like this:
+
+```yaml
+domino:
+  runtimes:
+    <runtimename>:
+      binary: # /absolute/path/to/the/runtime/binary
+      resource-marks: # command-line "resource marker", like -jar for Java applications
+```
+
+## Configuration examples
+
+Lets consider the following example:
+ * You registered an application called `myapp`. It's a `FILESYSTEM` based application which you set via the `source.type` parameter.
+ * Its `source.home` is `/home/myapphome`.
+ * Its `source.resource` is `my-app.jar`.
+ * You have configured the application to run directly via its executable (in other words you set `execution.via` to `EXECUTABLE`).
+ * You also added an argument via `execution.args`, let's say it's `--spring.profiles.active=production`.
+ * You also set the application to be executed as `my-user` via the `execution.as-user` parameter.
+
+The command formed by Domino will look something like this:
+
+```
+/home/myapphome/my-app.jar --spring.profiles.active
+```
+
+Domino will also take care of setting the executor user to `my-user`.
+
+Now you decide to change the execution type to `RUNTIME`. For this to work, you configure a runtime, called `java11`:
+ * Let's say its `binary` is located at `/usr/bin/jdk11/bin/java`;
+ * And the `resource-marker` for Java applications is always `-jar` (well if you are not using jlink to create modular executable archive, but that's another story).
+ 
+This time the command formed by Domino will look something like this:
+
+```
+/usr/bin/jdk11/bin/java -jar /home/myapphome/my-app.jar --spring.profiles.active
+```
+
+Again, executor user will be changed to `my-user`.
+
+Another change in the configuration, this time you switch to `SERVICE` based execution. A small update is needed for your configuration:
+ * You set the `execution.command-name` parameter to `my-app-service`.
+ * Also please make sure that you've already configured the relevant OS service via the configured service subsystem (`domino.system.spawn-control.service-handler`).
+ * Currently only `systemd` service subsystem is supported, so the example will reflect this.
+ 
+The formed command will look like this:
+
+```
+service my-app-service start
+```
+
+Important fact, that this time the executor user and arguments parameter have no effect. That's because these settings should be handled by
+your service unit file. However executor user should still be specified as the executable binary file will be `chown`-ed to that user during
+deployment. Below you'll find a matrix of the required parameters for each execution types, but Domino CLI can also help you in properly
+configuring your registrations.
+
+Before that, let's consider you want to add health-check for your application:
+ * You set the `health-check.enabled` parameter to `true` and provide the following parameters as well:
+ * You want to wait 5 seconds before the first check, and in case it fails, you want to wait for 5 seconds more before trying again,
+ so you set the `health-check.delay` parameter to `5 seconds`;
+ * You give the application 2 seconds to respond to a health-check request, so you set the `health-check.timeout` parameter to `2 seconds`;
+ * You set `health-check.max-attempts` to `3`, so your application will have 20 seconds in total to spin-up (because Domino waits 5 seconds first),
+ then tries to call the application 3 times every 5 seconds.
+ * Your application's health-check endpoint is `http://localhost:9999/healthcheck`, so you pass this value to the `health-check.endpoint` parameter.
+ 
+## Required configuration parameters by execution type
+
+| Parameter                | EXECUTABLE | RUNTIME  | SERVICE |
+|--------------------------|------------|----------|---------|
+| `source.type`            | FILESYSTEM                      |
+| `source.home`            | x          | x        | x       |
+| `source.resource`        | x          | x        | x       |
+| `execution.command-name` |            |          | x       |
+| `execution.as-user`      | x          | x        | x       |
+| `execution.via`          | x          | x        | x       |
+| `execution.args`         | optional   | optional |         |
+| `runtime`                |            | x        |         |
 
 # Usage
 
@@ -194,6 +346,11 @@ With these pieces of information the logic generates a filename in the format of
 This format is crucial for Domino to find the proper version of the uploaded binaries later, during the deployment phase.
 In case you want to use your own method to copy the binaries to the server, please make sure your solution follows the 
 pattern above. The received binary is then moved to the specified storage folder (`domino.storage.path`).
+
+An important note to mention regarding the version parameters is its format requirement - the version string may contain:
+ * lower- and uppercase alphanumerical letters (only English alphabet);
+ * numbers;
+ * or any of the following special characters: `.`, `-`, `_`.
 
 The binaries should be sent as a `multipart/form-data` form, where `executable` is the name of the field containing the
 binary file.
