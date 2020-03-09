@@ -87,7 +87,7 @@ for environment related overrides, please create the resembling configuration ym
 E.g. environment is 'production' (specified by `NODE_ENV=production`), therefore production overrides can be placed in
 a configuration file named `production.yml`.
 
-Configuration can be divided into the following for sections (with their relevant configuration parameters and details):
+Configuration can be divided into the following four sections (with their relevant configuration parameters and details):
 _(Please note, that default.yml already contains some hints about the usage of the configuration parameters.)_
 
 ## System configuration
@@ -139,8 +139,8 @@ Access controls.
 
 An application registration is a description of a deployment "procedure". You need to register all your applications that you'd like to
 have handled by Domino. Currently registration is not possible via REST API (and at this point it is not even planned to become). However
-Domino CLI provides a convenient way to create new or update existing registrations stored in a .yml file located on the path you are supposed
-to have provided while setting up your Domino instance (`domino.system.registrations-path`).
+Domino CLI provides a convenient way to create new or update existing registrations stored in a .yml file located on the path you have 
+provided while setting up your Domino instance (`domino.system.registrations-path`).
 
 Below you'll find detailed descriptions of all the possible configuration parameters and their requirement-matrix for each of the
 currently supported deployment methods.
@@ -220,8 +220,10 @@ domino:
   runtimes:
     <runtimename>:
       binary: # /absolute/path/to/the/runtime/binary
-      resource-marks: # command-line "resource marker", like -jar for Java applications
+      resource-marker: # command-line "resource marker", like -jar for Java applications
 ```
+
+The configuration above should be placed in the same file as the one for your application registrations.
 
 ## Configuration examples
 
@@ -236,7 +238,7 @@ Lets consider the following example:
 The command formed by Domino will look something like this:
 
 ```
-/home/myapphome/my-app.jar --spring.profiles.active
+/home/myapphome/my-app.jar --spring.profiles.active=production
 ```
 
 Domino will also take care of setting the executor user to `my-user`.
@@ -244,11 +246,13 @@ Domino will also take care of setting the executor user to `my-user`.
 Now you decide to change the execution type to `RUNTIME`. For this to work, you configure a runtime, called `java11`:
  * Let's say its `binary` is located at `/usr/bin/jdk11/bin/java`;
  * And the `resource-marker` for Java applications is always `-jar` (well if you are not using jlink to create modular executable archive, but that's another story).
- 
+ * A minor change is needed for the arguments - in this case it should be `-Dspring.profiles.active=production`, as it will be passed directly to the
+runtime binary.
+
 This time the command formed by Domino will look something like this:
 
 ```
-/usr/bin/jdk11/bin/java -jar /home/myapphome/my-app.jar --spring.profiles.active
+/usr/bin/jdk11/bin/java -Dspring.profiles.active=production -jar /home/myapphome/my-app.jar
 ```
 
 Again, executor user will be changed to `my-user`.
@@ -280,16 +284,16 @@ Before that, let's consider you want to add health-check for your application:
  
 ## Required configuration parameters by execution type
 
-| Parameter                | EXECUTABLE | RUNTIME  | SERVICE |
-|--------------------------|------------|----------|---------|
-| `source.type`            | FILESYSTEM                      |
-| `source.home`            | x          | x        | x       |
-| `source.resource`        | x          | x        | x       |
-| `execution.command-name` |            |          | x       |
-| `execution.as-user`      | x          | x        | x       |
-| `execution.via`          | x          | x        | x       |
-| `execution.args`         | optional   | optional |         |
-| `runtime`                |            | x        |         |
+| Parameter / exec. type   | executable | runtime    | service    |
+|--------------------------|------------|------------|------------|
+| `source.type`            | FILESYSTEM | FILESYSTEM | FILESYSTEM |
+| `source.home`            | x          | x          | x          |
+| `source.resource`        | x          | x          | x          |
+| `execution.command-name` |            |            | x          |
+| `execution.as-user`      | x          | x          | x          |
+| `execution.via`          | EXECUTABLE | RUNTIME    | SERVICE    |
+| `execution.args`         | optional   | optional   |            |
+| `runtime`                |            | x          |            |
 
 # Usage
 
@@ -369,7 +373,7 @@ In case you are using your own solution to copy the binaries to the server, it i
 | Status               | Description                                                   |
 |----------------------|---------------------------------------------------------------|
 | `201 Created`        | Successful upload                                             |
-| `400 Bad request`    | Invalid upload request (missing or invalid parameters         |
+| `400 Bad request`    | Invalid upload request (missing or invalid parameters)        |
 | `406 Not acceptable` | Not allowed MIME type or non-registered app                   |
 | `409 Conflicting`    | Already existing binary (same name, same version)             |
 | `403 Forbidden`      | Authentication failure (missing, invalid or expired JWT token |
@@ -420,7 +424,7 @@ As an example a response would look like this:
 }
 ```
 
-**Possible deployment status values and response status**
+**Possible deployment status values and their corresponding response statuses**
 
 | Deployment status               | Description                                                                                 | Related commands       | Mapped HTTP status          |
 |---------------------------------|---------------------------------------------------------------------------------------------|------------------------|-----------------------------|
@@ -440,4 +444,14 @@ For any of the endpoints above it is also possible that `403 Forbidden` is retur
 
 # Future improvement plans
 
-TODO
+Domino v1.0.0 introduced a couple of useful features - however there are still lots of ideas to be implemented in the future.
+Just to mention a few:
+ * Additional deployment methods, e.g. Docker-based.
+ * Finding a way to run Domino without root permissions.
+ * Loosen OS requirements (e.g. run on Windows as well).
+ * Handling multiple instances of the same application.
+ * Support for remote deployments.
+
+So, there's a long road ahead. Of course Domino is now a fully functional deployment orchestration solution, so if you feel like
+giving it a try, don't hesitate. If you have any questions, concerns, ideas, please let me know. Also if your start using Domino
+I'd really like to hear your thoughts about it.
