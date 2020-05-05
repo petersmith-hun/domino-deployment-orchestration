@@ -23,13 +23,6 @@ commands:
             VERSION=v$(cat /tmp/ws_store/version)$VERSION_QUALIFIER
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/ws_store/domino_release.tar.gz
 
-  publish-github-release:
-    docker:
-      - image: cibuilds/github:0.10
-    steps:
-      - github_release:
-          release-type: release
-
 jobs:
 
   build-and-package:
@@ -62,6 +55,12 @@ jobs:
                   - domino_release.tar.gz
                   - version
 
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - github_release:
+          release-type: release
 
 workflows:
   domino-release:
