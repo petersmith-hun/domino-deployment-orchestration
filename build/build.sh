@@ -13,4 +13,4 @@ npx pkg --targets=linux --output=build/target/out/domino .
 mkdir build/target/out/logs
 cp node_modules/bcrypt/build/Release/bcrypt_lib.node build/target/out/bcrypt_lib.node
 cp node_modules/process-list/build/Release/processlist.node build/target/out/processlist.node
-tar -czvf build/target/out/domino_release.tar.gz -C build/target/out .
+tar -czvf build/target/domino_release.tar.gz -C build/target/out .
