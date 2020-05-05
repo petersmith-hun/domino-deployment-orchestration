@@ -1,6 +1,6 @@
 {
   "name": "domino",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Deployment Orchestration for Minor Infrastructures, powered by Node.js",
   "main": "src/domino_esm_start.js",
   "bin": "build/target/for_packaging/es5_src/domino_pkg_entry_point.js",

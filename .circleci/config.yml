@@ -49,6 +49,12 @@ jobs:
                   ./build/build.sh
                   mkdir /tmp/ws_store
                   cp build/target/domino_release.tar.gz /tmp/ws_store/domino_release.tar.gz
+            - run:
+                name: "Extract version number"
+                command: |
+                  VERSION=$(cat package.json | grep version | head -n 1 | sed -E "s/.*([0-9]+\.[0-9]+\.[0-9]+).*/\1/")
+                  echo "Extracted version $VERSION"
+                  echo $VERSION >> /tmp/ws_store/version
             - persist_to_workspace:
                 root: /tmp/ws_store
                 paths:
