@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 npm install
-babel src -d build/target/for_packaging/es5_src
+npm install @babel/cli
+npm install @babel/core
+npx babel src -d build/target/for_packaging/es5_src
 cp package.json build/target/for_packaging/package.json
 mkdir build/target/for_packaging/es5_src/config
 cp config/di_config.json build/target/for_packaging/es5_src/config/di_config.json
