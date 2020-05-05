@@ -3,7 +3,7 @@
 npm install
 npm install @babel/cli
 npm install @babel/core
-npm install pkg
+npm install -g pkg
 npx babel src -d build/target/for_packaging/es5_src
 cp package.json build/target/for_packaging/package.json
 mkdir build/target/for_packaging/es5_src/config
