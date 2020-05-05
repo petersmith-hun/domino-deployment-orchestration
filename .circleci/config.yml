@@ -1,0 +1,78 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@1.1.6
+
+# Reusable commands
+commands:
+
+  # Command definition for publishing GitHub releases/tags
+  github_release:
+    parameters:
+      release-type:
+        type: enum
+        default: "rc"
+        enum: ["rc", "release"]
+    steps:
+      - attach_workspace:
+          at: /tmp/ws_store
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            [[ "<< parameters.release-type >>" = "release" ]] && VERSION_QUALIFIER="-release" || VERSION_QUALIFIER=""
+            VERSION=v$(cat /tmp/ws_store/version)$VERSION_QUALIFIER
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} /tmp/ws_store/domino_release.tar.gz
+
+jobs:
+
+  build-and-package:
+    executor:
+      name: node/default
+      tag: '12.13.0'
+    steps:
+      - checkout
+      - node/with-cache:
+          steps:
+            - run:
+                name: "Create logs directory before test execution"
+                command: mkdir logs
+            - run:
+                name: "Install Node dependencies via NPM"
+                command: npm install
+            - run:
+                name: "Execute Domino tests"
+                command: npm test
+            - run:
+                name: "Package and prepare executable"
+                command: |
+                  chmod u+x build/build.sh
+                  ./build/build.sh
+                  mkdir /tmp/ws_store
+                  cp build/target/out/domino_release.tar.gz /tmp/ws_store/domino_release.tar.gz
+            - persist_to_workspace:
+                root: /tmp/ws_store
+                paths:
+                  - domino_release.tar.gz
+                  - version
+
+
+workflows:
+  domino-release:
+    jobs:
+
+      - build-and-package:
+          filters:
+            branches:
+              only:
+                - deploy
+
+      - release-approval:
+          type: approval
+          requires:
+            - build-and-package
+
+      - publish-github-release:
+          context: leaflet_ci
+          requires:
+            - release-approval
+
