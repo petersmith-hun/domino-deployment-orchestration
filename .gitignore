@@ -5,6 +5,7 @@ node_modules/
 logs/
 scripts/
 storage/
+build/target
 *.iml
 domino-registrations.yml
-*.sh
+scripts/container_mgmt.sh

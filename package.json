@@ -1,13 +1,17 @@
 {
   "name": "domino",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Deployment Orchestration for Minor Infrastructures, powered by Node.js",
   "main": "src/domino_esm_start.js",
+  "bin": "build/target/for_packaging/es5_src/domino_pkg_entry_point.js",
   "scripts": {
     "test": "env NODE_ENV=test mocha --require @babel/register --require @babel/polyfill test/**/*.js",
     "test_win": "set NODE_ENV=test&& mocha --require @babel/register --require @babel/polyfill test/**/*.js",
     "coverage": "nyc --all --reporter=html --report-dir=.nyc_output/coverage npm run test",
     "start": "node src/domino_esm_start.js"
+  },
+  "pkg": {
+    "assets": "./config/di_config.json"
   },
   "keywords": [],
   "author": "Peter Smith",
@@ -27,6 +31,7 @@
     "node-dependency-injection": "2.3.5",
     "process-list": "2.0.0",
     "readline-sync": "1.4.10",
+    "regenerator-runtime": "0.13.5",
     "request": "2.88.0",
     "request-promise": "4.2.4",
     "simple-node-logger": "18.12.23"
@@ -38,6 +43,7 @@
     "@babel/preset-env": "7.8.4",
     "@babel/register": "7.8.3",
     "chai": "4.2.0",
+    "glob": "7.1.6",
     "mocha": "7.0.1",
     "mockery": "2.1.0",
     "nyc": "15.0.0",
