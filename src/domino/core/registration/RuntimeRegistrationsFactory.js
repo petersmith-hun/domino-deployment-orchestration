@@ -13,7 +13,7 @@ export default class RuntimeRegistrationsFactory {
 	 */
 	createRuntimeRegistrations(yamlSourceDocument) {
 
-		const runtimesNode = yamlSourceDocument["domino"]["runtimes"];
+		const runtimesNode = yamlSourceDocument["domino"]["runtimes"] || [];
 		const runtimes = runtimesNode
 			.map(this._createRuntimeRegistration)
 			.map(runtime => [runtime.runtimeName, runtime]);

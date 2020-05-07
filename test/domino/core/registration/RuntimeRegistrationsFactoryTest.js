@@ -47,5 +47,17 @@ describe("Unit tests for RuntimeRegistrationsFactory", () => {
 				resourceMarker: ""
 			});
 		});
+
+		it("should skip runtime registrations if missing", () => {
+
+			// given
+			const registrationsFile = {domino: {}};
+
+			// when
+			const result = runtimeRegistrationsFactory.createRuntimeRegistrations(registrationsFile);
+
+			// then
+			assert.equal(result.size, 0);
+		});
 	});
 });
