@@ -39,9 +39,10 @@ export default class AbstractFilesystemDeploymentHandler extends AbstractDeploym
 		let deploymentResult;
 		try {
 			const userID = this._executorUserRegistry.getUserID(registration);
+			const groupID = this._executorUserRegistry.getGroupID(registration);
 			fs.copyFileSync(source, target);
 			fs.chmodSync(target, DEFAULT_EXECUTION_PERMISSION);
-			fs.chownSync(target, userID, userID);
+			fs.chownSync(target, userID, groupID);
 			logger.info(`Successfully deployed app=${registration.appName} from=${source} to=${target}`);
 			deploymentResult = this._prepareDeploymentResult(version, true);
 		} catch (e) {

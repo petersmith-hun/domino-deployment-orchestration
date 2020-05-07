@@ -26,8 +26,12 @@ describe("Unit tests for ExecutorUserRegistry", () => {
 				switch (command) {
 					case "id -u leaflet-user":
 						return 123;
+					case "id -g leaflet-user":
+						return 124;
 					case "id -u tlp-user":
 						return 456;
+					case "id -g tlp-user":
+						return 457;
 					default:
 						assert.fail("Test case received invalid parameter for 'id' call");
 				}
@@ -44,8 +48,8 @@ describe("Unit tests for ExecutorUserRegistry", () => {
 
 			// then
 			assert.equal(executorUserRegistry._users.size, 2);
-			assert.equal(executorUserRegistry._users.get("leaflet-user"), 123);
-			assert.equal(executorUserRegistry._users.get("tlp-user"), 456);
+			assert.deepEqual(executorUserRegistry._users.get("leaflet-user"), {userID: 123, groupID: 124});
+			assert.deepEqual(executorUserRegistry._users.get("tlp-user"), {userID: 456, groupID: 457});
 		});
 
 		const invalidUsernameScenarios = ["root", "../", "user**"];
@@ -102,7 +106,7 @@ describe("Unit tests for ExecutorUserRegistry", () => {
 
 			// given
 			const registration = {execution: {user: "leaflet-user"}};
-			executorUserRegistry._users.set("leaflet-user", 999);
+			executorUserRegistry._users.set("leaflet-user", {userID: 999, groupID: 998});
 
 			// when
 			const result = executorUserRegistry.getUserID(registration);
@@ -115,12 +119,48 @@ describe("Unit tests for ExecutorUserRegistry", () => {
 
 			// given
 			const registration = {execution: {user: "leaflet-user"}};
-			executorUserRegistry._users.set("tlp-user", 999);
+			executorUserRegistry._users.set("tlp-user", {userID: 999, groupID: 998});
 
 			try {
 
 				// when
 				executorUserRegistry.getUserID(registration);
+
+				assert.fail("Test case should have thrown error");
+			} catch (e) {
+
+				// then
+				// exception expected
+				assert.equal(e.message, `User '${registration.execution.user} is not registered`);
+			}
+		});
+	});
+
+	describe("Test scenarios for #getGroupID", () => {
+
+		it("should return the group ID of the registered user", () => {
+
+			// given
+			const registration = {execution: {user: "leaflet-user"}};
+			executorUserRegistry._users.set("leaflet-user", {userID: 999, groupID: 998});
+
+			// when
+			const result = executorUserRegistry.getGroupID(registration);
+
+			// then
+			assert.equal(result, 998);
+		});
+
+		it("should throw error in case of non-registered user", () => {
+
+			// given
+			const registration = {execution: {user: "leaflet-user"}};
+			executorUserRegistry._users.set("tlp-user", {userID: 999, groupID: 998});
+
+			try {
+
+				// when
+				executorUserRegistry.getGroupID(registration);
 
 				assert.fail("Test case should have thrown error");
 			} catch (e) {

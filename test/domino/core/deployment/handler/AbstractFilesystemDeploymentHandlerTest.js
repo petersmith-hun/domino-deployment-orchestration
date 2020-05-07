@@ -24,6 +24,7 @@ const _REGISTRATION = {
 	}
 };
 const _USER_ID = 1000;
+const _GROUP_ID = 999;
 const _SOURCE_FILENAME = "app-v1.2.3.jar";
 const _SOURCE_PATH = `${_STORAGE_CONFIG.path}/${_SOURCE_FILENAME}`;
 const _TARGET_PATH = `${_REGISTRATION.source.home}/${_REGISTRATION.source.resource}`;
@@ -56,6 +57,7 @@ describe("Unit tests for AbstractFilesystemDeploymentHandler", () => {
 
 			// given
 			executorUserRegistryMock.getUserID.withArgs(_REGISTRATION).returns(_USER_ID);
+			executorUserRegistryMock.getGroupID.withArgs(_REGISTRATION).returns(_GROUP_ID);
 			filenameUtilityMock.createFilename.withArgs({
 				originalname: _REGISTRATION.source.resource,
 				app: _REGISTRATION.appName,
@@ -86,6 +88,7 @@ describe("Unit tests for AbstractFilesystemDeploymentHandler", () => {
 
 			// given
 			executorUserRegistryMock.getUserID.withArgs(_REGISTRATION).returns(_USER_ID);
+			executorUserRegistryMock.getGroupID.withArgs(_REGISTRATION).returns(_GROUP_ID);
 			filenameUtilityMock.createFilename.returns(_SOURCE_FILENAME);
 
 			const fsExistsFake = sinon.fake.returns(true);
@@ -169,6 +172,6 @@ describe("Unit tests for AbstractFilesystemDeploymentHandler", () => {
 		const groupID = fsChownFake.getCall(0).args[2];
 		assert.equal(targetPath, _TARGET_PATH);
 		assert.equal(userID, _USER_ID);
-		assert.equal(groupID, _USER_ID);
+		assert.equal(groupID, _GROUP_ID);
 	}
 });
