@@ -62,6 +62,9 @@ describe("Unit tests for AppRegistrationsFactory", () => {
 								"as-user": "tms-user",
 								via: "RUNTIME",
 								args: "arg3"
+							},
+							"health-check": {
+								enabled: false
 							}
 						}
 					}]

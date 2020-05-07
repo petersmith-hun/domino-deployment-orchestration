@@ -84,7 +84,7 @@ export class AppExecution {
 export class AppHealthCheck {
 
 	constructor(yamlSourceDocumentExecutionNode) {
-		if (yamlSourceDocumentExecutionNode) {
+		if (yamlSourceDocumentExecutionNode && yamlSourceDocumentExecutionNode["enabled"]) {
 			this.enabled = yamlSourceDocumentExecutionNode["enabled"];
 			this.delay = ms(yamlSourceDocumentExecutionNode["delay"]);
 			this.timeout = ms(yamlSourceDocumentExecutionNode["timeout"]);
