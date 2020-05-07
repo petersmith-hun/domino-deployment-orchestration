@@ -189,7 +189,7 @@ Execution parameters determine how the executable should be spun up.
 |----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `via`          | Spin up method for the application. For the currently supported types, please find the options below in the Execution types section.                                                                    |
 | `command-name` | In case the application requires an explicit command to be executed to spin it up, that should be provided here. Currently it is only used by the `SERVICE` execution type as the service command name. |
-| `as-user`      | (Usually a service-only) OS user which will execute the application.                                                                                                                                    |
+| `as-user`      | (Usually a service-only) OS user which will execute the application. A group with the same name should also exist.                                                                                      |
 | `args`         | List of command-line arguments to be passed to the application.                                                                                                                                         |
 
 ### Execution types
