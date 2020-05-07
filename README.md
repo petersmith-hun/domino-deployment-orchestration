@@ -37,12 +37,16 @@ encrypting your management account password, etc.
 
 # Requirements
 
-* Linux server OS (tested on Debian 8 and 9, Ubuntu should also be fine)
-* Node.js 12.x runtime environment or above
+* Linux server OS (tested on Debian 8, 9 and 10, Ubuntu should also be fine)
+* Node.js 12.x runtime environment or above (only for standard installation process)
 
 # Installation
 
-Currently Domino can be installed manually. Please follow the guide below to properly install and start using Domino:
+## Standard installation method
+
+Currently, Domino can be installed manually, however an experimental installation method has already been introduced.
+Please see the [Experimental installation method](#Experimental installation method) section in case you're interested in that one,
+otherwise, please follow the guide below to properly install and start using Domino:
 1) Clone/download Domino from its [GitHub repository](https://github.com/petersmith-hun/domino-deployment-orchestration).
 2) Create a folder under Domino's root folder, named `logs`.
 3) Configure Domino via `config/default.yml` - for the accepted configuration parameters, please consult the 
@@ -68,15 +72,46 @@ or use the [Domino CLI tool's](https://github.com/petersmith-hun/domino-cli/#con
    SuccessExitStatus=143
    TimeoutStopSec=10
    Restart=no
+   KillMode=process
    
    [Install]
    WantedBy=multi-user.target
     ``` 
+
+
+## Experimental installation method
+
+An other way of installation is to use the self-contained binary version of Domino. Using this method does not require
+installing NodeJS environment, NPM, PM2, or anything else. The binary is available in the GitHub repository of Domino, under
+the [Release](https://github.com/petersmith-hun/domino-deployment-orchestration/releases) tab. For the latest binaries please
+check back often.
+
+To install Domino with this method please follow the guide below:
+1) Download the latest binary from the GitHub Releases page mentioned above. The binary is packaged as a tar.gz archive.
+2) Extract it on your server. In the package you'll find the binary named as `domino` and two `.node` files - please make
+sure to have them next to the binary, as those are NodeJS native module libraries, required for executing Domino.
+3) Create your application registrations, and the base configuration the same way as you would do with standard installation.
+Details about configuring Domino can be found in the [Configuration](#Configuration) section.
+4) To start Domino use either of the following methods below:
+    1) Run `./domino` (assuming you are standing in the directory where the binary is located). Please make sure that the
+    binary has execution permission. Also, you need to export the necessary environment variables, as described below under 
+    the [Configuration](#Configuration) section.
+    2) Create a `systemd` or `init.d` service descriptor. It should be similar to the one mentioned above, but the `ExecStart`
+    parameter should be different:
+    ```
+   ExecStart=/path/to/domino
+    ``` 
    
-**Important notice**: Currently Domino needs to be executed as root due to its requirements for elevated commands, such as
+## Important notes
+
+**Important notice**: Currently, Domino needs to be executed as root due to its requirements for elevated commands, such as
 spawning and killing processes, changing ownership and permissions, etc.. It's for sure an undesired requirement, and so
 it has the necessary focus to have it eliminated as soon as possible. As it might require a complete redesign of the app's
 command execution solutions, it will definitely take a while though. Please start using Domino accordingly!
+
+Also, important to mention, that in case you execute Domino using a systemd service unit, `KillMode=process` parameter must
+be present! This prevents systemd from shutting down all the spawned sub-processes (all your registered applications) in case
+you stop Domino. However, in case your registrations are using SERVICE execution type, your sub-processes won't be affected anyways. 
 
 # Configuration
 
