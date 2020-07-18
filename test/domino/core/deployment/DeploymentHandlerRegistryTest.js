@@ -7,21 +7,24 @@ import RuntimeDeploymentHandler from "../../../../src/domino/core/deployment/han
 import ServiceDeploymentHandler from "../../../../src/domino/core/deployment/handler/ServiceDeploymentHandler";
 import DeploymentHandlerRegistry from "../../../../src/domino/core/deployment/DeploymentHandlerRegistry";
 import UnsupportedDeploymentMode from "../../../../src/domino/core/error/UnsupportedDeploymentMode";
+import DockerDeploymentHandler from "../../../../src/domino/core/deployment/handler/DockerDeploymentHandler";
 
 describe("Unit tests for DeploymentHandlerRegistry", () => {
 
 	let executableDeploymentHandlerMock = null;
 	let runtimeDeploymentHandlerMock = null;
 	let serviceDeploymentHandlerMock = null;
+	let dockerDeploymentHandlerMock = null;
 	let deploymentHandlerRegistry = null;
 
 	beforeEach(() => {
 		executableDeploymentHandlerMock = sinon.createStubInstance(ExecutableDeploymentHandler);
 		runtimeDeploymentHandlerMock = sinon.createStubInstance(RuntimeDeploymentHandler);
 		serviceDeploymentHandlerMock = sinon.createStubInstance(ServiceDeploymentHandler);
+		dockerDeploymentHandlerMock = sinon.createStubInstance(DockerDeploymentHandler);
 
 		deploymentHandlerRegistry = new DeploymentHandlerRegistry(executableDeploymentHandlerMock,
-			runtimeDeploymentHandlerMock, serviceDeploymentHandlerMock);
+			runtimeDeploymentHandlerMock, serviceDeploymentHandlerMock, dockerDeploymentHandlerMock);
 	});
 
 	afterEach(() => {
@@ -36,7 +39,8 @@ describe("Unit tests for DeploymentHandlerRegistry", () => {
 			{sourceType: "filesystem", executionMode: "service", expectedHandler: () => serviceDeploymentHandlerMock},
 			{sourceType: "FILESYSTEM", executionMode: "EXECUTABLE", expectedHandler: () => executableDeploymentHandlerMock},
 			{sourceType: "FILESYSTEM", executionMode: "RUNTIME", expectedHandler: () => runtimeDeploymentHandlerMock},
-			{sourceType: "FILESYSTEM", executionMode: "SERVICE", expectedHandler: () => serviceDeploymentHandlerMock}
+			{sourceType: "FILESYSTEM", executionMode: "SERVICE", expectedHandler: () => serviceDeploymentHandlerMock},
+			{sourceType: "DOCKER", executionMode: "STANDARD", expectedHandler: () => dockerDeploymentHandlerMock},
 		];
 
 		getHandlerScenarios.forEach(scenario => {
@@ -56,6 +60,7 @@ describe("Unit tests for DeploymentHandlerRegistry", () => {
 
 		const getHandlerErrorScenarios = [
 			{sourceType: "docker", executionMode: "image"},
+			{sourceType: "unknown", executionMode: null},
 			{sourceType: "filesystem", executionMode: "zip"},
 			{sourceType: "filesystem", executionMode: null},
 			{sourceType: null, executionMode: null}

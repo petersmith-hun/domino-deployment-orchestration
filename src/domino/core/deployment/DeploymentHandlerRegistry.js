@@ -5,12 +5,15 @@ import UnsupportedDeploymentMode from "../error/UnsupportedDeploymentMode";
  */
 export default class DeploymentHandlerRegistry {
 
-	constructor(executableDeploymentHandler, runtimeDeploymentHandler, serviceDeploymentHandler) {
+	constructor(executableDeploymentHandler, runtimeDeploymentHandler, serviceDeploymentHandler, dockerDeploymentHandler) {
 		this._registry = {
 			filesystem: {
 				executable: executableDeploymentHandler,
 				runtime: runtimeDeploymentHandler,
 				service: serviceDeploymentHandler
+			},
+			docker: {
+				standard: dockerDeploymentHandler
 			}
 		}
 	}

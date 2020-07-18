@@ -21,6 +21,7 @@ export default class ExecutableVersion {
 	constructor(versionString) {
 		_POSSIBLE_VERSION_PARTS.forEach(value => this[value] = _DEFAULT_VERSION_PART);
 		this._parseVersionString(versionString);
+		this._rawVersion = versionString;
 	}
 
 	/**
@@ -70,6 +71,15 @@ export default class ExecutableVersion {
 		return _POSSIBLE_VERSION_PARTS
 			.map(part => this[part])
 			.join(_TO_STRING_PART_SEPARATOR);
+	}
+
+	/**
+	 * Returns the raw (unparsed) version string.
+	 *
+	 * @returns {string} unparsed version string
+	 */
+	getRawVersion() {
+		return this._rawVersion;
 	}
 
 	_compareField(otherVersion, field) {

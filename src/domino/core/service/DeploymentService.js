@@ -9,10 +9,10 @@ const logger = LoggerFactory.createLogger("DeploymentService");
  */
 export default class DeploymentService {
 
-	constructor(appRegistrationRegistry, deploymentHandlerRegistry, executableVersionUtility, healthCheckProvider) {
+	constructor(appRegistrationRegistry, deploymentHandlerRegistry, latestVersionAdapter, healthCheckProvider) {
 		this._appRegistrationRegistry = appRegistrationRegistry;
 		this._deploymentHandlerRegistry = deploymentHandlerRegistry;
-		this._executableVersionUtility = executableVersionUtility;
+		this._latestVersionAdapter = latestVersionAdapter;
 		this._healthCheckProvider = healthCheckProvider;
 	}
 
@@ -23,8 +23,9 @@ export default class DeploymentService {
 	 */
 	async deployLatest(app) {
 
-		const latestVersion = this._executableVersionUtility.findLatestVersion(app);
+		const latestVersion = this._latestVersionAdapter.determineLatestVersion(app);
 		let deploymentResult;
+
 		if (latestVersion) {
 			deploymentResult = await this.deploy(app, latestVersion);
 		} else {

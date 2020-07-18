@@ -40,7 +40,8 @@
       "arguments": [
         "@core.component.deployment.handler.fs-executable",
         "@core.component.deployment.handler.fs-runtime",
-        "@core.component.deployment.handler.fs-service"
+        "@core.component.deployment.handler.fs-service",
+        "@core.component.deployment.handler.docker-run"
       ]
     },
     "core.component.utility.executable-version": {
@@ -49,11 +50,37 @@
         "@core.component.config-provider"
       ]
     },
+    "core.component.utility.latest-version-adapter": {
+      "class": "domino/core/util/LatestVersionAdapter",
+      "arguments": [
+        "@core.component.registrations.registry",
+        "@core.component.utility.executable-version"
+      ]
+    },
     "core.component.utility.filename": {
       "class": "domino/core/util/FilenameUtility"
     },
     "core.component.utility.exec-binary-handler": {
       "class": "domino/core/deployment/handler/util/ExecutableBinaryHandler"
+    },
+    "core.component.docker-support.creation-request-mapper": {
+      "class": "domino/core/deployment/docker/DockerCreateContainerRequestMapper"
+    },
+    "core.component.docker-support.request-factory": {
+      "class": "domino/core/deployment/docker/DockerRequestFactory",
+      "arguments": [
+        "@core.component.docker-support.creation-request-mapper"
+      ]
+    },
+    "core.component.docker-support.socket-client": {
+      "class": "domino/core/deployment/docker/DockerSocketClient",
+      "arguments": [
+        "@core.component.config-provider",
+        "@core.component.docker-support.response-handler"
+      ]
+    },
+    "core.component.docker-support.response-handler": {
+      "class": "domino/core/deployment/docker/DockerSocketResponseHandler"
     },
     "core.component.deployment.handler.fs-executable": {
       "class": "domino/core/deployment/handler/ExecutableDeploymentHandler",
@@ -83,6 +110,14 @@
         "@core.component.config-provider"
       ]
     },
+    "core.component.deployment.handler.docker-run": {
+      "class": "domino/core/deployment/handler/DockerDeploymentHandler",
+      "arguments": [
+        "@core.component.config-provider",
+        "@core.component.docker-support.socket-client",
+        "@core.component.docker-support.request-factory"
+      ]
+    },
     "core.component.svc-adapter.systemd": {
       "class": "domino/core/deployment/handler/service/SystemdServiceAdapter"
     },
@@ -101,7 +136,7 @@
       "arguments": [
         "@core.component.registrations.registry",
         "@core.component.deployment.handler.registry",
-        "@core.component.utility.executable-version",
+        "@core.component.utility.latest-version-adapter",
         "@core.component.health-check-provider"
       ]
     },

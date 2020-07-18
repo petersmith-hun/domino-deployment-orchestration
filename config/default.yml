@@ -77,3 +77,19 @@ domino:
     # list of remote host addresses from where access to Domino is allowed
     # specify ALL keyword to disable remote host checking
     allowed-sources: ALL
+
+  # Docker Engine configuration
+  docker:
+
+    # Docker Engine API socket path
+    # on most systems the default parameter can be used
+    # if Domino is executed in a Docker container, the socket path must be mounted as a volume
+    socket: /var/run/docker.sock
+
+    # private Docker Registry server configurations
+    servers:
+
+      # the example below can (and should) be removed from the production configuration
+      - host: localhost:5000
+        username: <PROVIDE_ME>
+        password: <PROVIDE_ME>

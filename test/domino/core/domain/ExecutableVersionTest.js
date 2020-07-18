@@ -14,6 +14,7 @@ describe ("Unit tests for ExecutableVersion", () => {
 			{versionString: "1.9.2-build5", expectedVersion: "1-9-2-build5"},
 			{versionString: "1.9.2_RC.1", expectedVersion: "1-9-2-RC_1"},
 			{versionString: "1.9.2.5.7.4", expectedVersion: "1-9-2-5_7_4"},
+			{versionString: "latest", expectedVersion: "latest---"},
 		];
 
 		scenarios.forEach(scenario => {
@@ -24,6 +25,7 @@ describe ("Unit tests for ExecutableVersion", () => {
 
 				// then
 				assert.equal(result.toString(), scenario.expectedVersion);
+				assert.equal(result.getRawVersion(), scenario.versionString);
 			});
 		});
 	});
