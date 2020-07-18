@@ -8,7 +8,7 @@ an experimental project for those who
  * want to have an easy-to-use application managing the deployment of their own applications;
  * and don't want to waste time (and money) on configuring and operating complex deployment management solutions.
 
-Domino was initially designed to serve the purposes above, and is a (soon-to-be) deployment management solution for the
+Domino was initially designed to serve the purposes above, and is an actively used deployment management solution for the
 [Leaflet blog engine stack](https://github.com/petersmith-hun/leaflet-backend).
 
 **Table of contents**:
@@ -78,7 +78,7 @@ encrypting your management account password, etc.
 ## Standard installation method
 
 Currently, Domino can be installed manually, however an experimental installation method has already been introduced.
-Please see the [Experimental installation method](#Experimental installation method) section in case you're interested in that one,
+Please see the [Experimental installation method](#experimental-installation-method) section in case you're interested in that one,
 otherwise, please follow the guide below to properly install and start using Domino:
 1) Clone/download Domino from its [GitHub repository](https://github.com/petersmith-hun/domino-deployment-orchestration).
 2) Create a folder under Domino's root folder, named `logs`.
