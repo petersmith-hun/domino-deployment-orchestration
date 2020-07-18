@@ -375,7 +375,7 @@ service my-app-service start
 ```
 
 Important fact, that this time the executor user and arguments parameter have no effect. That's because these settings should be handled by
-your service unit file. However executor user should still be specified as the executable binary file will be `chown`-ed to that user during
+your service unit file. However, executor user should still be specified as the executable binary file will be `chown`-ed to that user during
 deployment. Below you'll find a matrix of the required parameters for each execution types, but Domino CLI can also help you in properly
 configuring your registrations.
 
@@ -387,7 +387,35 @@ Before that, let's consider you want to add health-check for your application:
  * You set `health-check.max-attempts` to `3`, so your application will have 20 seconds in total to spin-up (because Domino waits 5 seconds first),
  then tries to call the application 3 times every 5 seconds.
  * Your application's health-check endpoint is `http://localhost:9999/healthcheck`, so you pass this value to the `health-check.endpoint` parameter.
- 
+
+Moving on to a different configuration type, as the application is now packaged as a Docker container. Consider the following configuration you want 
+to have for your container:
+* You set `source.type` to `DOCKER` and `execution.via` to `STANDARD` - this way your registration is now Docker-based.
+* You want to name your container as `my-app`, so you set `execution.command-name` to this value.
+* The image of your application is located in a local Docker registry, reachable via `localhost:5000`, so this will be
+the value of `source.home`. In case this is a private repository, please don't forget to configure its credentials.
+* The name of the image is `mydockerapp` - `source.resource` should hold this value.
+* You want to make some additional fine-tuning to your container, so you set `execution.args` to the following:
+    ```yml
+    # ...
+    args:
+      
+      # expose port 8080 of your application to 8090 on the host 
+      ports:
+        8090: 8080
+      
+      # set an environment parameter, which is passed to your application 
+      environment:
+        APP_ARGS: --spring.profiles.active=production
+  
+      # mount a read-write volume, /app from your container to /home/server/mydockerapp/workdir on your server 
+      volumes:
+        "/home/server/mydockerapp/workdir": "/app:rw"
+  
+      # change the restart policy so the container would be automatically started on system restart
+      restart-policy: unless-stopped
+    ```
+
 ## Required configuration parameters by execution type
 
 | Parameter / exec. type   | executable | runtime    | service    | standard |
