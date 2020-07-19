@@ -26,18 +26,18 @@ export default class DockerRequest {
 	}
 
 	/**
-	 * Returns the registration's name or {@code null} is not specified.
+	 * Returns the registration's name or {@code null} if not specified.
 	 *
-	 * @returns {String|null} the registration's name or {@code null} is not specified
+	 * @returns {String|null} the registration's name or {@code null} if not specified
 	 */
 	getRegistrationName() {
 		return this._registrationName || null;
 	}
 
 	/**
-	 * Returns the registration's image home URI or {@code null} is not specified.
+	 * Returns the registration's image home URI or {@code null} if not specified.
 	 *
-	 * @returns {String|null} the registration's image home URI or {@code null} is not specified
+	 * @returns {String|null} the registration's image home URI or {@code null} if not specified
 	 */
 	getImageHome() {
 		return this._imageHome || null;
@@ -54,7 +54,7 @@ export default class DockerRequest {
 	}
 
 	/**
-	 * Returns the set request body or {@code null} is not specified.
+	 * Returns the set request body or {@code null} if not specified.
 	 *
 	 * @returns {*|null} request body object or {@code null}
 	 */
