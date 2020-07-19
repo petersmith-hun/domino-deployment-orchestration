@@ -10,6 +10,7 @@ import ExecutableVersionUtility from "../../../../src/domino/core/util/Executabl
 import HealthCheckProvider from "../../../../src/domino/core/deployment/healthcheck/HealthCheckProvider";
 import AbstractDeploymentHandler from "../../../../src/domino/core/deployment/handler/AbstractDeploymentHandler";
 import ExecutableVersion from "../../../../src/domino/core/domain/ExecutableVersion";
+import LatestVersionAdapter from "../../../../src/domino/core/util/LatestVersionAdapter";
 
 const TEST_APP = "test_app";
 const TEST_LATEST_VERSION_STRING = "1.2.3.4";
@@ -19,7 +20,7 @@ describe("Unit tests for DeploymentService", () => {
 
 	let appRegistrationRegistryMock = null;
 	let deploymentHandlerRegistryMock = null;
-	let executableVersionUtilityMock = null;
+	let latestVersionAdapterMock = null;
 	let healthCheckProviderMock = null;
 	let handlerMock = null;
 	let deploymentService = null;
@@ -27,12 +28,12 @@ describe("Unit tests for DeploymentService", () => {
 	beforeEach(() => {
 		appRegistrationRegistryMock = sinon.createStubInstance(AppRegistrationRegistry);
 		deploymentHandlerRegistryMock = sinon.createStubInstance(DeploymentHandlerRegistry);
-		executableVersionUtilityMock = sinon.createStubInstance(ExecutableVersionUtility);
+		latestVersionAdapterMock = sinon.createStubInstance(LatestVersionAdapter);
 		healthCheckProviderMock = sinon.createStubInstance(HealthCheckProvider);
 		handlerMock = sinon.createStubInstance(AbstractDeploymentHandler);
 
 		deploymentService = new DeploymentService(appRegistrationRegistryMock, deploymentHandlerRegistryMock,
-			executableVersionUtilityMock, healthCheckProviderMock);
+			latestVersionAdapterMock, healthCheckProviderMock);
 	});
 
 	afterEach(() => {
@@ -82,7 +83,7 @@ describe("Unit tests for DeploymentService", () => {
 
 		function _prepareMocks(version) {
 
-			executableVersionUtilityMock.findLatestVersion.withArgs(TEST_APP).returns(version);
+			latestVersionAdapterMock.determineLatestVersion.withArgs(TEST_APP).returns(version);
 
 			if (version !== null) {
 				appRegistrationRegistryMock.getRegistration.withArgs(TEST_APP).returns(TEST_REGISTRATION);

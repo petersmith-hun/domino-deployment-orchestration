@@ -24,7 +24,8 @@ describe("Unit tests for ConfigurationProvider", () => {
 		{configMethodReference: (configurationProvider) => configurationProvider.getRegistrationsFilePath(), expectedConfigCall: "domino.system.registrations-path"},
 		{configMethodReference: (configurationProvider) => configurationProvider.getStartTimeout(), expectedConfigCall: "domino.system.spawn-control.start-timeout"},
 		{configMethodReference: (configurationProvider) => configurationProvider.getServiceHandler(), expectedConfigCall: "domino.system.spawn-control.service-handler"},
-		{configMethodReference: (configurationProvider) => configurationProvider.getSecurityConfig(), expectedConfigCall: "domino.auth"}
+		{configMethodReference: (configurationProvider) => configurationProvider.getSecurityConfig(), expectedConfigCall: "domino.auth"},
+		{configMethodReference: (configurationProvider) => configurationProvider.getDockerConfig(), expectedConfigCall: "domino.docker"}
 	];
 
 	configurationGetterScenarios.forEach(scenario => {

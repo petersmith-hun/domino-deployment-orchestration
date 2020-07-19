@@ -1,7 +1,7 @@
 import ms from "ms";
 
-const SOURCE_TYPES = ["FILESYSTEM"];
-const EXECUTION_HANDLERS = ["EXECUTABLE", "RUNTIME", "SERVICE"];
+const SOURCE_TYPES = ["FILESYSTEM", "DOCKER"];
+const EXECUTION_HANDLERS = ["EXECUTABLE", "RUNTIME", "SERVICE", "STANDARD"];
 
 /**
  * Domain class representing an application registration.

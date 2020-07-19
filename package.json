@@ -1,14 +1,14 @@
 {
   "name": "domino",
-  "version": "1.1.3",
+  "version": "1.2.0",
   "description": "Deployment Orchestration for Minor Infrastructures, powered by Node.js",
   "main": "src/domino_esm_start.js",
   "bin": "build/target/for_packaging/es5_src/domino_pkg_entry_point.js",
   "scripts": {
     "test": "env NODE_ENV=test mocha --require @babel/register --require @babel/polyfill test/**/*.js",
     "test_win": "set NODE_ENV=test&& mocha --require @babel/register --require @babel/polyfill test/**/*.js",
-    "coverage": "nyc --all --reporter=html --report-dir=.nyc_output/coverage npm run test",
-    "coverage_win": "nyc --all --reporter=html --report-dir=.nyc_output/coverage npm run test_win",
+    "coverage": "nyc --all --reporter=html --report-dir=.nyc_output/coverage --exclude=build/**/* --exclude=test/**/* npm run test",
+    "coverage_win": "nyc --all --reporter=html --report-dir=.nyc_output/coverage --exclude=build/**/* --exclude=test/**/* npm run test_win",
     "start": "node src/domino_esm_start.js"
   },
   "pkg": {

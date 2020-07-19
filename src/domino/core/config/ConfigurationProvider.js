@@ -69,4 +69,15 @@ export default class ConfigurationProvider {
 	getSecurityConfig() {
 		return config.get("domino.auth");
 	}
+
+	/**
+	 * Returns the Docker configuration parameters:
+	 *  - Docker Engine API socket path
+	 *  - list of private Docker Registry server configurations as host, username and password parameters
+	 *
+	 * @returns the Docker configuration parameters
+	 */
+	getDockerConfig() {
+		return config.get("domino.docker");
+	}
 }

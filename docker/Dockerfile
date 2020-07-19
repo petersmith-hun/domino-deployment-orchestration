@@ -13,7 +13,7 @@ RUN    apt-get update \
     && echo "Installed npm version is `npm -v`" \
     && echo "Installed JRE version is `java -version`"
 
-RUN    mkdir -p /opt/domino/src \
+RUN    mkdir -p /opt/domino/src/config \
     && mkdir -p /opt/domino/config \
     && mkdir -p /opt/domino/storage \
     && mkdir -p /opt/domino/logs \
@@ -24,7 +24,11 @@ ADD docker/config /opt/domino/config/
 ADD package.json /opt/domino
 ADD package-lock.json /opt/domino
 
-RUN    useradd --system leaflet \
+# Docker container fix for DI config
+RUN mv /opt/domino/config/di_config.json /opt/domino/src/config/di_config.json
+
+RUN    addgroup --system --gid 990 leaflet \
+    && adduser --system --no-create-home --gid 990 --uid 990 leaflet \
     && useradd --system domino \
     && chown -R leaflet:leaflet /opt/apps \
     && chown -R domino:domino /opt/domino \

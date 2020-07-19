@@ -31,7 +31,7 @@ export default class ExecutorUserRegistry {
 	registerExecutorUsers(registrations) {
 		registrations.forEach((registration) => {
 			const username = registration.execution.user;
-			if (!this._users.get(username)) {
+			if (username && !this._users.get(username)) {
 				this._users.set(username, this._findUserAndGroupID(username));
 			}
 		});

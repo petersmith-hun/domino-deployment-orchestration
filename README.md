@@ -8,8 +8,37 @@ an experimental project for those who
  * want to have an easy-to-use application managing the deployment of their own applications;
  * and don't want to waste time (and money) on configuring and operating complex deployment management solutions.
 
-Domino was initially designed to serve the purposes above, and is a (soon-to-be) deployment management solution for the
+Domino was initially designed to serve the purposes above, and is an actively used deployment management solution for the
 [Leaflet blog engine stack](https://github.com/petersmith-hun/leaflet-backend).
+
+**Table of contents**:
+1. [Key features](#key-features)
+2. [Requirements](#requirements)
+3. [Installation](#installation)
+    1. [Standard installation method](#standard-installation-method)
+    2. [Experimental installation method](#experimental-installation-method)
+    3. [Important notes](#important-notes)
+4. [Configuration](#configuration)
+    1. [System configuration](#system-configuration)
+    2. [Server configuration](#server-configuration)
+    3. [Storage configuration](#storage-configuration)
+    4. [Authentication configuration](#authentication-configuration)
+    5. [Docker configuration](#docker-configuration)
+5. [Application registrations](#application-registrations)
+    1. [Source configuration](#source-configuration)
+    2. [Execution configuration](#execution-configuration)
+        1. [Execution types](#execution-types)
+        2. [Execution arguments for Docker registrations](#execution-arguments-for-docker-registrations)
+    3. [Health-check configuration](#health-check-configuration)
+    4. [Runtime configuration](#runtime-configuration)
+    5. [Configuration examples](#configuration-examples)
+    6. [Required configuration parameters by execution type](#required-configuration-parameters-by-execution-type)
+6. [Usage](#usage)
+    1. [Authentication](#authentication)
+    2. [Executable upload endpoint](#executable-upload-endpoint)
+    3. [Lifecycle management commands](#lifecycle-management-commands)
+7. [Changelog](#changelog)
+8. [Future improvement plans](#future-improvement-plans)
 
 # Key features
 
@@ -35,17 +64,21 @@ There's also a [CLI tool](https://github.com/petersmith-hun/domino-cli/) specifi
 easy access to Domino's lifecycle management commands, helping to properly create application registration configurations,
 encrypting your management account password, etc.
 
+7) **Docker support**  
+(Since v1.2.0) Domino is also able to handle Docker containers.
+
 # Requirements
 
 * Linux server OS (tested on Debian 8, 9 and 10, Ubuntu should also be fine)
 * Node.js 12.x runtime environment or above (only for standard installation process)
+* Docker Engine installed (optional, for Docker support only)
 
 # Installation
 
 ## Standard installation method
 
 Currently, Domino can be installed manually, however an experimental installation method has already been introduced.
-Please see the [Experimental installation method](#Experimental installation method) section in case you're interested in that one,
+Please see the [Experimental installation method](#experimental-installation-method) section in case you're interested in that one,
 otherwise, please follow the guide below to properly install and start using Domino:
 1) Clone/download Domino from its [GitHub repository](https://github.com/petersmith-hun/domino-deployment-orchestration).
 2) Create a folder under Domino's root folder, named `logs`.
@@ -170,10 +203,22 @@ Access controls.
 | `domino.auth.password`        | Domino management account password. Password must be encrypted before provided here. For encryption it is suggested to use Domino CLI. |
 | `domino.auth.allowed-sources` | List of allowed remote addresses accessing Domino. Specify `ALL` to turn off remote address verification.                              |
 
+## Docker configuration
+
+Docker Engine and Docker registry configuration.
+
+| Parameter                          | Description                                                                                                          |
+|------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| `domino.docker.socket`             | Docker Engine socket path. Default is `/var/run/docker.sock` which is the actual default path on most Linux systems. |
+| `domino.docker.servers`            | List of private Docker Registry hosts with their credentials.                                                        |
+| `domino.docker.servers[].host`     | Docker Registry server address (with port).                                                                          |
+| `domino.docker.servers[].username` | Docker Registry server username.                                                                                     |
+| `domino.docker.servers[].password` | Docker Registry server password.                                                                                     |
+
 # Application registrations
 
 An application registration is a description of a deployment "procedure". You need to register all your applications that you'd like to
-have handled by Domino. Currently registration is not possible via REST API (and at this point it is not even planned to become). However
+have handled by Domino. Currently, registration is not possible via REST API (and at this point it is not even planned to become). However
 Domino CLI provides a convenient way to create new or update existing registrations stored in a .yml file located on the path you have 
 provided while setting up your Domino instance (`domino.system.registrations-path`).
 
@@ -210,27 +255,53 @@ Under each application registrations a configuration map should be placed. The p
 
 Source parameters determine where the application's executable is located and how it should be treated.
 
-| Parameter  | Description                                                                                                                                                                 |
-|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `type`     | Type of the executable. Currently only `FILESYSTEM` is supported, which means the executable is located in the servers's filesystem as a standalone executable binary file. |
-| `home`     | Work directory. Also for `FILESYSTEM`-sourced applications, the executable will be copied in this folder during deployment.                                                 |
-| `resource` | The name of the deployed executable.                                                                                                                                        |
+| Parameter  | Description                                                                                                                                                                                                                 |
+|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `type`     | Type of the executable. Currently `FILESYSTEM` and `DOCKER` are supported, which means either the executable is located in the servers's filesystem as a standalone executable binary file or exists as a Docker container. |
+| `home`     | Work directory or Docker Registry URI. Also for `FILESYSTEM`-sourced applications, the executable will be copied in this folder during deployment.                                                                          |
+| `resource` | The name of the deployed executable.                                                                                                                                                                                        |
+
+**Notes**
+* `home` parameter for `DOCKER`-based applications will determine where the image should be searched for by Docker Engine. Leaving it empty
+means the image is located in the central (public) Docker image repository, `hub.docker.com`. Otherwise the server address should be provided
+here in the following format: `<host>:<port>[/<optional-group-name>]`.
 
 ## Execution configuration
 
 Execution parameters determine how the executable should be spun up.
 
-| Parameter      | Description                                                                                                                                                                                             |
-|----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `via`          | Spin up method for the application. For the currently supported types, please find the options below in the Execution types section.                                                                    |
-| `command-name` | In case the application requires an explicit command to be executed to spin it up, that should be provided here. Currently it is only used by the `SERVICE` execution type as the service command name. |
-| `as-user`      | (Usually a service-only) OS user which will execute the application. A group with the same name should also exist.                                                                                      |
-| `args`         | List of command-line arguments to be passed to the application.                                                                                                                                         |
+| Parameter      | Description                                                                                                                                                                                                                            |
+|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `via`          | Spin up method for the application. For the currently supported types, please find the options below in the Execution types section.                                                                                                   |
+| `command-name` | In case the application requires an explicit command to be executed to spin it up, that should be provided here. Used by the `SERVICE` execution type as the service command name and by `DOCKER` registrations as the container name. |
+| `as-user`      | (Usually a service-only) OS user which will execute the application. A group with the same name should also exist.                                                                                                                     |
+| `args`         | List of command-line arguments to be passed to the application. See [Required configuration parameters by execution type](#required-configuration-parameters-by-execution-type) for configuration guide of Docker registrations.       |
 
 ### Execution types
 * `EXECUTABLE`: spin up the application directly via its executable 
 * `RUNTIME`: spin up the application with the aid of an external runtime environment
 * `SERVICE`: spin up the application via an OS service unit (init.d, systemd, etc.).
+* `STANDARD`: standard handling mode for Docker-based registrations; uses pull, run, and standard lifecycle Docker commands
+
+### Execution arguments for Docker registrations
+
+The expected value of `execution.args` parameter is different for `DOCKER` registrations. Instead of a simple list of arguments, the following parameters should be provided:
+
+| Parameter        | Corresponding `docker run` flag                         | Description                                                                                                                    |
+|------------------|---------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| `restart-policy` | `--restart <policy>`                                    | Restart policy of the container. Standard parameters should be used.                                                           |
+| `network-mode`   | `--network <name>`                                      | Network mode.                                                                                                                  |
+| `ports`          | `-p <exposed>:<internal>`                               | Port mappings as a map of exposed-internal port pairs.                                                                         |
+| `environment`    | `--env <key=value>`                                     | Environment variables to be passed to the container as map of key-value pairs                                                  |
+| `commands-args`  | arguments added in the run command after the image name | Command line arguments to be passed to the container.                                                                          |
+| `volumes`        | `-v <path-on-host>:<path-in-container>:<mode>`          | Volume mounts. Due to nature of the generated creation request, ro/rw mode flag should always be passed.                       |
+| `custom`         | none                                                    | Custom container creation request document accordingly to the Docker Engine API specification. Only for custom configurations! |  
+
+**Notes**
+
+* In most cases the arguments above are enough to spin up a container. For custom requirements, `custom` parameter can be used, however it requires using the exact format as a direct engine API call.
+To simplify handling such cases, Docker Compose support is planned to be added to Domino in a later release.
+* It is important to mention that all the arguments above are optional. You can spin up your container without any of the parameters above, however port exposure is usually essential.
 
 ## Health-check configuration
 
@@ -304,7 +375,7 @@ service my-app-service start
 ```
 
 Important fact, that this time the executor user and arguments parameter have no effect. That's because these settings should be handled by
-your service unit file. However executor user should still be specified as the executable binary file will be `chown`-ed to that user during
+your service unit file. However, executor user should still be specified as the executable binary file will be `chown`-ed to that user during
 deployment. Below you'll find a matrix of the required parameters for each execution types, but Domino CLI can also help you in properly
 configuring your registrations.
 
@@ -316,19 +387,47 @@ Before that, let's consider you want to add health-check for your application:
  * You set `health-check.max-attempts` to `3`, so your application will have 20 seconds in total to spin-up (because Domino waits 5 seconds first),
  then tries to call the application 3 times every 5 seconds.
  * Your application's health-check endpoint is `http://localhost:9999/healthcheck`, so you pass this value to the `health-check.endpoint` parameter.
- 
+
+Moving on to a different configuration type, as the application is now packaged as a Docker container. Consider the following configuration you want 
+to have for your container:
+* You set `source.type` to `DOCKER` and `execution.via` to `STANDARD` - this way your registration is now Docker-based.
+* You want to name your container as `my-app`, so you set `execution.command-name` to this value.
+* The image of your application is located in a local Docker registry, reachable via `localhost:5000`, so this will be
+the value of `source.home`. In case this is a private repository, please don't forget to configure its credentials.
+* The name of the image is `mydockerapp` - `source.resource` should hold this value.
+* You want to make some additional fine-tuning to your container, so you set `execution.args` to the following:
+    ```yml
+    # ...
+    args:
+      
+      # expose port 8080 of your application to 8090 on the host 
+      ports:
+        8090: 8080
+      
+      # set an environment parameter, which is passed to your application 
+      environment:
+        APP_ARGS: --spring.profiles.active=production
+  
+      # mount a read-write volume, /app from your container to /home/server/mydockerapp/workdir on your server 
+      volumes:
+        "/home/server/mydockerapp/workdir": "/app:rw"
+  
+      # change the restart policy so the container would be automatically started on system restart
+      restart-policy: unless-stopped
+    ```
+
 ## Required configuration parameters by execution type
 
-| Parameter / exec. type   | executable | runtime    | service    |
-|--------------------------|------------|------------|------------|
-| `source.type`            | FILESYSTEM | FILESYSTEM | FILESYSTEM |
-| `source.home`            | x          | x          | x          |
-| `source.resource`        | x          | x          | x          |
-| `execution.command-name` |            |            | x          |
-| `execution.as-user`      | x          | x          | x          |
-| `execution.via`          | EXECUTABLE | RUNTIME    | SERVICE    |
-| `execution.args`         | optional   | optional   |            |
-| `runtime`                |            | x          |            |
+| Parameter / exec. type   | executable | runtime    | service    | standard |
+|--------------------------|------------|------------|------------|----------|
+| `source.type`            | FILESYSTEM | FILESYSTEM | FILESYSTEM | DOCKER   |
+| `source.home`            | x          | x          | x          | optional |
+| `source.resource`        | x          | x          | x          | x        |
+| `execution.command-name` |            |            | x          | x        |
+| `execution.as-user`      | x          | x          | x          |          |
+| `execution.via`          | EXECUTABLE | RUNTIME    | SERVICE    | STANDARD |
+| `execution.args`         | optional   | optional   |            | x        |
+| `runtime`                |            | x          |            |          |
 
 # Usage
 
@@ -477,16 +576,28 @@ As an example a response would look like this:
 
 For any of the endpoints above it is also possible that `403 Forbidden` is returned in case your JWT token is missing, invalid or expired.
 
+# Changelog
+
+**v1.2.0**
+* Added Docker support ("standard" command based)
+
+**v1.1.3**
+* Added executable packaging for Linux
+* Bugfixes
+
+**v1.0.0**
+* Initial release of Domino
+
 # Future improvement plans
 
 Domino v1.0.0 introduced a couple of useful features - however there are still lots of ideas to be implemented in the future.
 Just to mention a few:
- * Additional deployment methods, e.g. Docker-based.
+ * Additional deployment methods, e.g. Docker Compose-based.
  * Finding a way to run Domino without root permissions.
  * Loosen OS requirements (e.g. run on Windows as well).
  * Handling multiple instances of the same application.
  * Support for remote deployments.
 
 So, there's a long road ahead. Of course Domino is now a fully functional deployment orchestration solution, so if you feel like
-giving it a try, don't hesitate. If you have any questions, concerns, ideas, please let me know. Also if your start using Domino
+giving it a try, don't hesitate. If you have any questions, concerns, ideas, please let me know. Also, if your start using Domino
 I'd really like to hear your thoughts about it.
