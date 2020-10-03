@@ -578,6 +578,9 @@ For any of the endpoints above it is also possible that `403 Forbidden` is retur
 
 # Changelog
 
+**v1.2.1**
+* General maintenance (updated dependencies to eliminate known vulnerabilities)
+
 **v1.2.0**
 * Added Docker support ("standard" command based)
 
