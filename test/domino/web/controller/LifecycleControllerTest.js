@@ -7,6 +7,7 @@ import DeploymentService from "../../../../src/domino/core/service/DeploymentSer
 import RequestValidator from "../../../../src/domino/web/util/RequestValidator";
 import LifecycleController from "../../../../src/domino/web/controller/LifecycleController";
 import {DeploymentStatus} from "../../../../src/domino/core/domain/DeploymentStatus";
+import {InfoStatus} from "../../../../src/domino/core/domain/InfoStatus";
 
 const _TEST_VERSION = "1.2.3";
 const _TEST_APP = "app-1";
@@ -31,6 +32,33 @@ describe("Unit tests for LifecycleController", () => {
 
 	afterEach(() => {
 		sinon.restore();
+	});
+
+	describe("Test scenarios for #getInfo", () => {
+
+		it("should return application info", async () => {
+
+			// given
+			requestMock.params = {
+				app: _TEST_APP
+			};
+			const appInfo = {
+				status: InfoStatus.PROVIDED,
+				info: {
+					version: "1.0.0",
+					name: "Test Application"
+				}
+			};
+			deploymentServiceMock.getInfo.withArgs(requestMock.params.app).resolves(appInfo)
+			responseMock.status.withArgs(200).returns(responseMock);
+
+			// when
+			await lifecycleController.getInfo(requestMock, responseMock);
+
+			// then
+			const sendCallArgument = responseMock.send.getCall(0).args[0];
+			assert.deepEqual(sendCallArgument, appInfo.info);
+		});
 	});
 
 	describe("Test scenarios for #deploy", () => {

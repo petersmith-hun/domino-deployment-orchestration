@@ -131,13 +131,17 @@
     "core.component.health-check-provider": {
       "class": "domino/core/deployment/healthcheck/HealthCheckProvider.js"
     },
+    "core.component.info-provider": {
+      "class": "domino/core/deployment/info/InfoProvider.js"
+    },
     "core.service.deployment": {
       "class": "domino/core/service/DeploymentService",
       "arguments": [
         "@core.component.registrations.registry",
         "@core.component.deployment.handler.registry",
         "@core.component.utility.latest-version-adapter",
-        "@core.component.health-check-provider"
+        "@core.component.health-check-provider",
+        "@core.component.info-provider"
       ]
     },
     "web.component.registrations": {

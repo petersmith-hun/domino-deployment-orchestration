@@ -16,6 +16,22 @@ export default class LifecycleController extends BaseController {
 	}
 
 	/**
+	 * GET /lifecycle/:app/info
+	 * Retrieves information of the given application.
+	 *
+	 * @param req Express request object
+	 * @param resp Express response object
+	 */
+	async getInfo(req, resp) {
+
+		this._deploymentService.getInfo(req.params.app)
+			.then(infoWrapper => {
+				resp.status(this.mapInfoStatusToStatusCode(infoWrapper.status))
+					.send(infoWrapper.info);
+			});
+	}
+
+	/**
 	 * PUT /lifecycle/:app/deploy[/:version]
 	 * Prepares given application for execution.
 	 * Omitting version path parameter instructs Domino to select the latest available version.

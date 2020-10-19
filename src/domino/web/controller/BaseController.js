@@ -1,6 +1,8 @@
 import LoggerFactory from "../../helper/LoggerFactory";
 import {DeploymentStatus} from "../../core/domain/DeploymentStatus";
+import {InfoStatus} from "../../core/domain/InfoStatus";
 
+export const HTTP_STATUS_OK = 200;
 export const HTTP_STATUS_CREATED = 201;
 export const HTTP_STATUS_ACCEPTED = 202;
 export const HTTP_STATUS_BAD_REQUEST = 400;
@@ -8,6 +10,7 @@ export const HTTP_STATUS_FORBIDDEN = 403;
 export const HTTP_STATUS_NOT_FOUND = 404;
 export const HTTP_STATUS_NOT_ACCEPTABLE = 406;
 export const HTTP_STATUS_CONFLICTING = 409;
+export const HTTP_STATUS_EXPECTATION_FAILED = 417;
 export const HTTP_STATUS_INTERNAL_SERVER_ERROR = 500;
 
 const SEC_TO_MS_MULTIPLIER = 1000;
@@ -48,6 +51,33 @@ export default class BaseController {
 	 */
 	getControllerName() {
 		return this._controllerName;
+	}
+
+	/**
+	 * Maps the given info status (of InfoStatus enum) to a corresponding HTTP status code.
+	 *
+	 * @param infoStatus InfoStatus enum value
+	 * @return {number} mapped HTTP status code
+	 */
+	mapInfoStatusToStatusCode(infoStatus) {
+
+		let status;
+		switch (infoStatus) {
+			case InfoStatus.PROVIDED:
+				status = HTTP_STATUS_OK;
+				break;
+			case InfoStatus.NON_CONFIGURED:
+				status = HTTP_STATUS_NOT_FOUND;
+				break;
+			case InfoStatus.MISCONFIGURED:
+				status = HTTP_STATUS_EXPECTATION_FAILED;
+				break;
+			case InfoStatus.FAILED:
+			default:
+				status = HTTP_STATUS_INTERNAL_SERVER_ERROR;
+		}
+
+		return status;
 	}
 
 	/**

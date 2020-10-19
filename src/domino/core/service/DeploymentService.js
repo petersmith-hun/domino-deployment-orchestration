@@ -9,11 +9,21 @@ const logger = LoggerFactory.createLogger("DeploymentService");
  */
 export default class DeploymentService {
 
-	constructor(appRegistrationRegistry, deploymentHandlerRegistry, latestVersionAdapter, healthCheckProvider) {
+	constructor(appRegistrationRegistry, deploymentHandlerRegistry, latestVersionAdapter, healthCheckProvider, infoProvider) {
 		this._appRegistrationRegistry = appRegistrationRegistry;
 		this._deploymentHandlerRegistry = deploymentHandlerRegistry;
 		this._latestVersionAdapter = latestVersionAdapter;
 		this._healthCheckProvider = healthCheckProvider;
+		this._infoProvider = infoProvider;
+	}
+
+	/**
+	 * Retrieves information of the given application.
+	 *
+	 * @param app application of which info endpoint is requested
+	 */
+	async getInfo(app) {
+		return await this._infoProvider.getAppInfo(this._getRegistration(app));
 	}
 
 	/**

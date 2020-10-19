@@ -29,6 +29,14 @@ describe("Unit tests for AppRegistrationsFactory", () => {
 								"as-user": "leaflet-user",
 								via: "EXECUTABLE",
 								args: ["--arg1", "--arg2"]
+							},
+							info: {
+								enabled: true,
+								endpoint: "http://localhost:8000/info",
+								"field-mapping": {
+									version: "$.build.version",
+									name: "$.app.name"
+								}
 							}
 						}
 					}, {
@@ -90,6 +98,14 @@ describe("Unit tests for AppRegistrationsFactory", () => {
 					user: "leaflet-user",
 					executionHandler: "EXECUTABLE",
 					args: ["--arg1", "--arg2"]
+				},
+				appInfo: {
+					enabled: true,
+					endpoint: "http://localhost:8000/info",
+					fieldMapping: {
+						version: "$.build.version",
+						name: "$.app.name"
+					}
 				}
 			});
 			assert.deepEqual(result.get("tlp"), {
@@ -112,7 +128,8 @@ describe("Unit tests for AppRegistrationsFactory", () => {
 					user: undefined,
 					executionHandler: "SERVICE",
 					args: undefined
-				}
+				},
+				appInfo: {}
 			});
 			assert.deepEqual(result.get("tms"), {
 				appName: "tms",
@@ -128,7 +145,8 @@ describe("Unit tests for AppRegistrationsFactory", () => {
 					user: "tms-user",
 					executionHandler: "RUNTIME",
 					args: "arg3"
-				}
+				},
+				appInfo: {}
 			});
 		});
 

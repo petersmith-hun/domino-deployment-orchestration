@@ -39,6 +39,7 @@ export default class ControllerRegistrations {
 
 		// lifecycle controller registrations
 		expressApp
+			.get("/lifecycle/:app/info", this._wrapAsyncError(async (req, resp) => lifecycleController.getInfo(req, resp)))
 			.put("/lifecycle/:app/deploy", this._wrapAsyncError(async (req, resp) => lifecycleController.deploy(req, resp)))
 			.put("/lifecycle/:app/deploy/:version", this._wrapAsyncError(async (req, resp) => lifecycleController.deploy(req, resp)))
 			.put("/lifecycle/:app/start", this._wrapAsyncError(async (req, resp) => lifecycleController.start(req, resp)))

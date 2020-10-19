@@ -234,11 +234,13 @@ domino:
       source: ...
       execution: ...
       health-check: ...
+      info: ...
       runtime: ...
     <appname2>:
       source: ...
       execution: ...
       health-check: ...
+      info: ...
       runtime: ...
 ```
 
@@ -314,6 +316,17 @@ It is possible to run a health-check right after the application has been deploy
 | `timeout`      | Maximum wait time for a single health-check request. Must be provided in ms-utility format.                                   |
 | `max-attempts` | Maximum number of health-check attempts in case of failure. In case an application exceeds this limit, it is considered dead. |
 | `endpoint`     | Health-check endpoint of the application                                                                                      |  
+
+## Application info endpoint configuration
+
+| Parameter       | Description                                                                                                          |
+|-----------------|----------------------------------------------------------------------------------------------------------------------|
+| `enabled`       | Enabled application info endpoint. The parameters below can be omitted if you disable info endpoint.                 |
+| `endpoint`      | Application info endpoint URI. (Full path is needed - host, port, context path, path).                               |
+| `field-mapping` | Configures how the info endpoint's response should be mapped to Domino's own response. Please see the example below. |
+
+Field mapping happens using target-source field pairs, where source fields are accessed using JSON Path expressions.
+An example is provided in the [Configuration example](#configuration-examples) section. 
 
 ## Runtime configuration
 
@@ -416,6 +429,42 @@ the value of `source.home`. In case this is a private repository, please don't f
       restart-policy: unless-stopped
     ```
 
+As an additional step, let's consider a scenario, where you want to map a standard Spring Boot Actuator endpoint response 
+with build info as well. Such response looks similar like the following:
+
+```json
+{
+  "app": {
+    "name": "Some Application"
+  },
+  "build": {
+    "version": "1.0.0"
+  }
+}
+```
+
+Using this example, the following configuration ...
+
+```yaml
+# ...
+info:
+  enabled: true
+  endpoint: http://localhost:8000/info
+  field-mapping:
+    name: $.app.name
+    version: $.build.version
+``` 
+
+... would generate this response:
+
+```json
+{
+  "name": "Some Application",
+  "version": "1.0.0"
+}
+```
+
+
 ## Required configuration parameters by execution type
 
 | Parameter / exec. type   | executable | runtime    | service    | standard |
@@ -515,6 +564,13 @@ In case you are using your own solution to copy the binaries to the server, it i
 ## Lifecycle management commands
 
 ```
+GET /lifecycle/{app}/info
+```
+
+Returns information about the running instance of the specified application. Data returned on this endpoint can (and must)
+be configured as part of the registration configuration.
+
+```
 PUT /lifecycle/{app}/deploy[/{version}]
 ```
 
@@ -577,6 +633,9 @@ As an example a response would look like this:
 For any of the endpoints above it is also possible that `403 Forbidden` is returned in case your JWT token is missing, invalid or expired.
 
 # Changelog
+
+**v1.3.0**
+* Added ability to retrieve version and some additional information about a running application 
 
 **v1.2.1**
 * General maintenance (updated dependencies to eliminate known vulnerabilities)
