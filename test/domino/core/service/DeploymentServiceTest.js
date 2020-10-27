@@ -6,11 +6,12 @@ import {DeploymentStatus} from "../../../../src/domino/core/domain/DeploymentSta
 import DeploymentService from "../../../../src/domino/core/service/DeploymentService";
 import AppRegistrationRegistry from "../../../../src/domino/core/registration/AppRegistrationRegistry";
 import DeploymentHandlerRegistry from "../../../../src/domino/core/deployment/DeploymentHandlerRegistry";
-import ExecutableVersionUtility from "../../../../src/domino/core/util/ExecutableVersionUtility";
 import HealthCheckProvider from "../../../../src/domino/core/deployment/healthcheck/HealthCheckProvider";
 import AbstractDeploymentHandler from "../../../../src/domino/core/deployment/handler/AbstractDeploymentHandler";
 import ExecutableVersion from "../../../../src/domino/core/domain/ExecutableVersion";
 import LatestVersionAdapter from "../../../../src/domino/core/util/LatestVersionAdapter";
+import InfoProvider from "../../../../src/domino/core/deployment/info/InfoProvider";
+import {InfoStatus} from "../../../../src/domino/core/domain/InfoStatus";
 
 const TEST_APP = "test_app";
 const TEST_LATEST_VERSION_STRING = "1.2.3.4";
@@ -22,6 +23,7 @@ describe("Unit tests for DeploymentService", () => {
 	let deploymentHandlerRegistryMock = null;
 	let latestVersionAdapterMock = null;
 	let healthCheckProviderMock = null;
+	let infoProvider = null;
 	let handlerMock = null;
 	let deploymentService = null;
 
@@ -30,14 +32,38 @@ describe("Unit tests for DeploymentService", () => {
 		deploymentHandlerRegistryMock = sinon.createStubInstance(DeploymentHandlerRegistry);
 		latestVersionAdapterMock = sinon.createStubInstance(LatestVersionAdapter);
 		healthCheckProviderMock = sinon.createStubInstance(HealthCheckProvider);
+		infoProvider = sinon.createStubInstance(InfoProvider);
 		handlerMock = sinon.createStubInstance(AbstractDeploymentHandler);
 
 		deploymentService = new DeploymentService(appRegistrationRegistryMock, deploymentHandlerRegistryMock,
-			latestVersionAdapterMock, healthCheckProviderMock);
+			latestVersionAdapterMock, healthCheckProviderMock, infoProvider);
 	});
 
 	afterEach(() => {
 		sinon.restore();
+	});
+
+	describe("Test scenarios for #getInfo", () => {
+
+		it("should getInfo return application information for the given application", async () => {
+
+			// given
+			const appInfo = {
+				status: InfoStatus.PROVIDED,
+				info: {
+					version: "1.0.0",
+					name: "Test Application"
+				}
+			};
+			appRegistrationRegistryMock.getRegistration.withArgs(TEST_APP).returns(TEST_REGISTRATION);
+			infoProvider.getAppInfo.withArgs(TEST_REGISTRATION).returns(appInfo);
+
+			// when
+			const result = await deploymentService.getInfo(TEST_APP);
+
+			// then
+			assert.equal(result, appInfo);
+		});
 	});
 
 	describe("Test scenarios for #deployLatest", () => {

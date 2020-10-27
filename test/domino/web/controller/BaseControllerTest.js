@@ -5,6 +5,7 @@ import sinon from "sinon";
 import {ResponseStubTemplate, wait} from "../../testutils/TestUtils";
 import BaseController from "../../../../src/domino/web/controller/BaseController";
 import {DeploymentStatus} from "../../../../src/domino/core/domain/DeploymentStatus";
+import {InfoStatus} from "../../../../src/domino/core/domain/InfoStatus";
 
 const _TEST_CONTROLLER_NAME = "test-controller";
 
@@ -55,6 +56,28 @@ describe("Unit tests for BaseController", () => {
 
 			// then
 			assert.equal(result, _TEST_CONTROLLER_NAME);
+		});
+	});
+
+	describe("Test scenarios for #mapInfoStatusToStatusCode", () => {
+
+		const scenarios = [
+			{infoStatus: InfoStatus.PROVIDED, expectedHttpStatus: 200},
+			{infoStatus: InfoStatus.NON_CONFIGURED, expectedHttpStatus: 404},
+			{infoStatus: InfoStatus.MISCONFIGURED, expectedHttpStatus: 417},
+			{infoStatus: InfoStatus.FAILED, expectedHttpStatus: 500},
+			{infoStatus: null, expectedHttpStatus: 500}
+		];
+
+		scenarios.forEach(scenario => {
+			it(`should return the mapped HTTP status code: ${scenario.infoStatus} -> ${scenario.expectedHttpStatus}`, () => {
+
+				// when
+				const result = baseController.mapInfoStatusToStatusCode(scenario.infoStatus);
+
+				// then
+				assert.equal(result, scenario.expectedHttpStatus);
+			});
 		});
 	});
 

@@ -14,6 +14,7 @@ export default class AppRegistration {
 		this.runtime = yamlSourceDocument["runtime"];
 		this.execution = new AppExecution(yamlSourceDocument["execution"]);
 		this.healthCheck = new AppHealthCheck(yamlSourceDocument["health-check"]);
+		this.appInfo = new AppInfo(yamlSourceDocument["info"]);
 	}
 }
 
@@ -83,13 +84,27 @@ export class AppExecution {
  */
 export class AppHealthCheck {
 
-	constructor(yamlSourceDocumentExecutionNode) {
-		if (yamlSourceDocumentExecutionNode && yamlSourceDocumentExecutionNode["enabled"]) {
-			this.enabled = yamlSourceDocumentExecutionNode["enabled"];
-			this.delay = ms(yamlSourceDocumentExecutionNode["delay"]);
-			this.timeout = ms(yamlSourceDocumentExecutionNode["timeout"]);
-			this.maxAttempts = yamlSourceDocumentExecutionNode["max-attempts"];
-			this.endpoint = yamlSourceDocumentExecutionNode["endpoint"];
+	constructor(yamlSourceDocumentHealthCheckNode) {
+		if (yamlSourceDocumentHealthCheckNode && yamlSourceDocumentHealthCheckNode["enabled"]) {
+			this.enabled = yamlSourceDocumentHealthCheckNode["enabled"];
+			this.delay = ms(yamlSourceDocumentHealthCheckNode["delay"]);
+			this.timeout = ms(yamlSourceDocumentHealthCheckNode["timeout"]);
+			this.maxAttempts = yamlSourceDocumentHealthCheckNode["max-attempts"];
+			this.endpoint = yamlSourceDocumentHealthCheckNode["endpoint"];
+		}
+	}
+}
+
+/**
+ * Domain class representing an application info endpoint descriptor.
+ */
+export class AppInfo {
+
+	constructor(yamlSourceDocumentInfoNode) {
+		if (yamlSourceDocumentInfoNode && yamlSourceDocumentInfoNode["enabled"]) {
+			this.enabled = yamlSourceDocumentInfoNode["enabled"];
+			this.endpoint = yamlSourceDocumentInfoNode["endpoint"];
+			this.fieldMapping = yamlSourceDocumentInfoNode["field-mapping"];
 		}
 	}
 }
