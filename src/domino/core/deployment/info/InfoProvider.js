@@ -1,7 +1,7 @@
 import rp from "request-promise";
 import LoggerFactory from "../../../helper/LoggerFactory";
 import {InfoStatus} from "../../domain/InfoStatus";
-import jsonpath from "jsonpath";
+import {JSONPath} from 'jsonpath-plus';
 
 const logger = LoggerFactory.createLogger("InfoProvider");
 
@@ -58,7 +58,9 @@ export default class InfoProvider {
 		};
 
 		Object.keys(registration.appInfo.fieldMapping).forEach(key => {
-			const nodeValue = jsonpath.query(response.body, registration.appInfo.fieldMapping[key]);
+			const nodeValue = JSONPath({
+				json: response.body,
+				path: registration.appInfo.fieldMapping[key]});
 			if (nodeValue.length !== 1) {
 				infoResponse.status = InfoStatus.MISCONFIGURED;
 				logger.warn(`Application info endpoint is misconfigured, returned value=${nodeValue} for key=${key} - response will be deficient`);
