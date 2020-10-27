@@ -635,6 +635,9 @@ For any of the endpoints above it is also possible that `403 Forbidden` is retur
 
 # Changelog
 
+**v1.3.0-hotfix.1**
+* Fixed issue with 'jsonpath' occurring only in packaged application
+
 **v1.3.0**
 * Added ability to retrieve version and some additional information about a running application 
 
