@@ -1,4 +1,4 @@
-import {afterEach, before, describe, it} from "mocha";
+import {afterEach, describe, it} from "mocha";
 import * as mockery from "mockery";
 import {assert} from "chai";
 import {InfoStatus} from "../../../../../src/domino/core/domain/InfoStatus";
@@ -172,7 +172,6 @@ describe("Unit tests for InfoProvider", () => {
 	function _prepareMockedInfoProvider(rpResponse) {
 
 		mockery.deregisterAll();
-		// mock with a little hack so test suite is able to access the generated requestOptions
 		mockery.registerMock("request-promise", (requestOptions) => {
 			requestOptionsParameterValue = requestOptions
 			return Promise.resolve(rpResponse);
