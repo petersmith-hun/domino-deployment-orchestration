@@ -28,38 +28,35 @@ jobs:
   build-and-package:
     executor:
       name: node/default
-      tag: '16.17.0'
+      tag: '16'
     steps:
       - checkout
-      - node/with-cache:
-          steps:
-            - run:
-                name: "Create logs directory before test execution"
-                command: mkdir logs
-            - run:
-                name: "Install Node dependencies via NPM"
-                command: npm install
-            - run:
-                name: "Execute Domino tests"
-                command: npm test
-            - run:
-                name: "Package and prepare executable"
-                command: |
-                  chmod u+x build/build.sh
-                  ./build/build.sh
-                  mkdir /tmp/ws_store
-                  cp build/target/domino_release.tar.gz /tmp/ws_store/domino_release.tar.gz
-            - run:
-                name: "Extract version number"
-                command: |
-                  VERSION=$(cat package.json | grep version | head -n 1 | sed -E "s/.*([0-9]+\.[0-9]+\.[0-9]+).*/\1/")
-                  echo "Extracted version $VERSION"
-                  echo $VERSION >> /tmp/ws_store/version
-            - persist_to_workspace:
-                root: /tmp/ws_store
-                paths:
-                  - domino_release.tar.gz
-                  - version
+      - run:
+          name: "Create logs directory before test execution"
+          command: mkdir logs
+      - node/install-packages:
+          override-ci-command: npm install
+      - run:
+          name: "Execute Domino tests"
+          command: npm test
+      - run:
+          name: "Package and prepare executable"
+          command: |
+            chmod u+x build/build.sh
+            ./build/build.sh
+            mkdir /tmp/ws_store
+            cp build/target/domino_release.tar.gz /tmp/ws_store/domino_release.tar.gz
+      - run:
+          name: "Extract version number"
+          command: |
+            VERSION=$(cat package.json | grep version | head -n 1 | sed -E "s/.*([0-9]+\.[0-9]+\.[0-9]+).*/\1/")
+            echo "Extracted version $VERSION"
+            echo $VERSION >> /tmp/ws_store/version
+      - persist_to_workspace:
+          root: /tmp/ws_store
+          paths:
+            - domino_release.tar.gz
+            - version
 
   publish-github-release:
     docker:
