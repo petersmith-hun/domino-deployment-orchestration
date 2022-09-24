@@ -1,6 +1,6 @@
 import LoggerFactory from "../../../helper/LoggerFactory";
-import rp from "request-promise";
 import {DeploymentStatus} from "../../domain/DeploymentStatus";
+import axios from "axios";
 
 const logger = LoggerFactory.createLogger("HealthCheckProvider");
 
@@ -36,7 +36,7 @@ export default class HealthCheckProvider {
 			attemptsLeft--;
 			await this._callHealthCheckEndpoint(registration)
 				.then((response) => {
-					this._handleResponse(registration, response.statusCode, attemptsLeft, resolve, callLoop);
+					this._handleResponse(registration, response.status, attemptsLeft, resolve, callLoop);
 				})
 				.catch((error) => {
 					logger.error(`Failed to reach application health-check endpoint - reason: ${error.message}`);
@@ -66,14 +66,11 @@ export default class HealthCheckProvider {
 
 		const requestOptions = {
 			method: "GET",
-			uri: registration.healthCheck.endpoint,
-			json: true,
-			resolveWithFullResponse: true,
-			timeout: registration.healthCheck.timeout,
-			simple: false
+			url: registration.healthCheck.endpoint,
+			timeout: registration.healthCheck.timeout
 		};
 
-		return rp(requestOptions);
+		return axios(requestOptions);
 	}
 
 	_stopLoop(promiseResolution, intervalHandlerReference, successful) {

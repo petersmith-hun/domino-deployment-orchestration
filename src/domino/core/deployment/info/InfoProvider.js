@@ -1,7 +1,7 @@
-import rp from "request-promise";
 import LoggerFactory from "../../../helper/LoggerFactory";
 import {InfoStatus} from "../../domain/InfoStatus";
 import {JSONPath} from 'jsonpath-plus';
+import axios from "axios";
 
 const logger = LoggerFactory.createLogger("InfoProvider");
 
@@ -37,10 +37,10 @@ export default class InfoProvider {
 
 		this._callAppInfoEndpoint(registration)
 			.then(response => {
-				if (response.statusCode === 200) {
+				if (response.status === 200) {
 					resolve(this._processSuccessfulResponse(registration, response));
 				} else {
-					logger.error(`Application info endpoint returned response status ${response.statusCode}`);
+					logger.error(`Application info endpoint returned response status ${response.status}`);
 					resolve(_MISCONFIGURED_INFO_ENDPOINT);
 				}
 			})
@@ -59,7 +59,7 @@ export default class InfoProvider {
 
 		Object.keys(registration.appInfo.fieldMapping).forEach(key => {
 			const nodeValue = JSONPath({
-				json: response.body,
+				json: response.data,
 				path: registration.appInfo.fieldMapping[key]});
 			if (nodeValue.length !== 1) {
 				infoResponse.status = InfoStatus.MISCONFIGURED;
@@ -76,12 +76,9 @@ export default class InfoProvider {
 
 		const requestOptions = {
 			method: "GET",
-			uri: registration.appInfo.endpoint,
-			json: true,
-			resolveWithFullResponse: true,
-			simple: false
+			url: registration.appInfo.endpoint
 		};
 
-		return rp(requestOptions);
+		return axios(requestOptions);
 	}
 }

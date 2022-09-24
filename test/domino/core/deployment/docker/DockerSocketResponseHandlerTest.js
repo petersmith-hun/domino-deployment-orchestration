@@ -19,7 +19,7 @@ describe("Unit tests for DockerSocketResponseHandler", () => {
 			// given
 			let result = null;
 			let rejection = null;
-			const responseObjectMock = new ResponseObjectMock();
+			const responseObjectMock = {status: 200, data: null};
 			const requestContext = {
 				responseHandlerPolicy: ResponseHandlerPolicy.SINGLE,
 				commandName: "START",
@@ -28,21 +28,48 @@ describe("Unit tests for DockerSocketResponseHandler", () => {
 				resolutionHandler: (handlerResult) => result = handlerResult,
 				rejectionHandler: (handlerResult) => rejection = handlerResult
 			};
-			const response = {
-				statusCode: 200
-			}
 
 			// when
 			dockerSocketResponseHandler.readDockerResponse(requestContext);
-			responseObjectMock.getHandler("response")(response);
-			responseObjectMock.getHandler("end")();
 
 			// then
 			assert.equal(rejection, null);
 			assert.deepEqual(result, {
 				requestError: false,
+				responseData: null,
 				streamingResult: false,
-				statusCode: response.statusCode
+				statusCode: responseObjectMock.status
+			});
+		});
+
+		it("should log 404 response and resolve", () => {
+
+			// given
+			let result = null;
+			let rejection = null;
+			const data = '{"message": "Container not found"}';
+			const responseObjectMock = {status: 404, data: new ResponseObjectMock()};
+			const requestContext = {
+				responseHandlerPolicy: ResponseHandlerPolicy.LOG_ONLY_STREAM,
+				commandName: "REMOVE",
+				registrationName: "testapp1",
+				responseObject: responseObjectMock,
+				resolutionHandler: (handlerResult) => result = handlerResult,
+				rejectionHandler: (handlerResult) => rejection = handlerResult
+			};
+
+			// when
+			dockerSocketResponseHandler.readDockerResponse(requestContext);
+			responseObjectMock.data.getHandler("data")(data);
+			responseObjectMock.data.getHandler("end")();
+
+			// then
+			assert.equal(rejection, null);
+			assert.deepEqual(result, {
+				requestError: false,
+				responseData: null,
+				streamingResult: true,
+				statusCode: responseObjectMock.status
 			});
 		});
 
@@ -51,7 +78,8 @@ describe("Unit tests for DockerSocketResponseHandler", () => {
 			// given
 			let result = null;
 			let rejection = null;
-			const responseObjectMock = new ResponseObjectMock();
+			const data = {"status": "Downloaded", "message": "Image pulled"};
+			const responseObjectMock = {status: 200, data: data};
 			const requestContext = {
 				responseHandlerPolicy: ResponseHandlerPolicy.SINGLE,
 				commandName: "PULL",
@@ -61,12 +89,9 @@ describe("Unit tests for DockerSocketResponseHandler", () => {
 				resolutionHandler: (handlerResult) => result = handlerResult,
 				rejectionHandler: (handlerResult) => rejection = handlerResult
 			};
-			const data = '{"status": "Downloaded", "message": "Image pulled"}';
 
 			// when
 			dockerSocketResponseHandler.readDockerResponse(requestContext);
-			responseObjectMock.getHandler("data")(data);
-			responseObjectMock.getHandler("end")();
 
 			// then
 			assert.equal(rejection, null);
@@ -75,7 +100,9 @@ describe("Unit tests for DockerSocketResponseHandler", () => {
 				responseData: {
 					status: "Downloaded",
 					message: "Image pulled"
-				}
+				},
+				streamingResult: false,
+				statusCode: responseObjectMock.status
 			});
 		});
 
@@ -84,7 +111,7 @@ describe("Unit tests for DockerSocketResponseHandler", () => {
 			// given
 			let result = null;
 			let rejection = null;
-			const responseObjectMock = new ResponseObjectMock();
+			const responseObjectMock = {status: 200, data: new ResponseObjectMock()};
 			const requestContext = {
 				responseHandlerPolicy: ResponseHandlerPolicy.LOG_AND_COLLECT_STREAM,
 				commandName: "PULL",
@@ -100,10 +127,10 @@ describe("Unit tests for DockerSocketResponseHandler", () => {
 
 			// when
 			dockerSocketResponseHandler.readDockerResponse(requestContext);
-			responseObjectMock.getHandler("data")(data1);
-			responseObjectMock.getHandler("data")(data2);
-			responseObjectMock.getHandler("data")(data3);
-			responseObjectMock.getHandler("end")();
+			responseObjectMock.data.getHandler("data")(data1);
+			responseObjectMock.data.getHandler("data")(data2);
+			responseObjectMock.data.getHandler("data")(data3);
+			responseObjectMock.data.getHandler("end")();
 
 			// then
 			assert.equal(rejection, null);
@@ -121,7 +148,9 @@ describe("Unit tests for DockerSocketResponseHandler", () => {
 				}, {
 					status: "Downloaded",
 					message: "Image pulled"
-				}]
+				}],
+				streamingResult: true,
+				statusCode: responseObjectMock.status
 			});
 		});
 
@@ -130,7 +159,7 @@ describe("Unit tests for DockerSocketResponseHandler", () => {
 			// given
 			let result = null;
 			let rejection = null;
-			const responseObjectMock = new ResponseObjectMock();
+			const responseObjectMock = {status: 200, data: new ResponseObjectMock()};
 			const requestContext = {
 				responseHandlerPolicy: ResponseHandlerPolicy.LOG_ONLY_STREAM,
 				commandName: "PULL",
@@ -145,14 +174,17 @@ describe("Unit tests for DockerSocketResponseHandler", () => {
 
 			// when
 			dockerSocketResponseHandler.readDockerResponse(requestContext);
-			responseObjectMock.getHandler("data")(data1);
-			responseObjectMock.getHandler("data")(data2);
-			responseObjectMock.getHandler("end")();
+			responseObjectMock.data.getHandler("data")(data1);
+			responseObjectMock.data.getHandler("data")(data2);
+			responseObjectMock.data.getHandler("end")();
 
 			// then
 			assert.equal(rejection, null);
 			assert.deepEqual(result, {
-				requestError: false
+				requestError: false,
+				responseData: null,
+				streamingResult: true,
+				statusCode: responseObjectMock.status
 			});
 		});
 
@@ -161,7 +193,7 @@ describe("Unit tests for DockerSocketResponseHandler", () => {
 			// given
 			let result = null;
 			let rejection = null;
-			const responseObjectMock = new ResponseObjectMock();
+			const responseObjectMock = {status: 500};
 			const requestContext = {
 				responseHandlerPolicy: ResponseHandlerPolicy.SINGLE,
 				commandName: "START",
@@ -171,18 +203,15 @@ describe("Unit tests for DockerSocketResponseHandler", () => {
 				resolutionHandler: (handlerResult) => result = handlerResult,
 				rejectionHandler: (handlerResult) => rejection = handlerResult
 			};
-			const error = {
-				message: "Connection closed"
-			};
 
 			// when
 			dockerSocketResponseHandler.readDockerResponse(requestContext);
-			responseObjectMock.getHandler("error")(error);
 
 			// then
 			assert.equal(result, null);
 			assert.deepEqual(rejection, {
-				requestError: true
+				requestError: true,
+				responseData: null
 			});
 		});
 	});

@@ -1,6 +1,6 @@
 import AbstractAppender from "simple-node-logger";
-import rp from "request-promise";
 import TLPLogMessage from "./TLPLogMessage";
+import axios from "axios";
 
 const _APPENDER_NAME = "TLPAppender";
 
@@ -15,7 +15,7 @@ export default class TLPAppender extends AbstractAppender {
 	}
 	/**
 	 * Write method implementation that does the following steps:
-	 *  - converts a Simple Node Logger log entry object to an other compatible with TLP API
+	 *  - converts a Simple Node Logger log entry object to another compatible with TLP API
 	 *  - Prepares a RequestPromise compatible request object
 	 *  - Sends the log entry asynchronously to TLP
 	 *
@@ -26,7 +26,7 @@ export default class TLPAppender extends AbstractAppender {
 		const tlpLogMessage = new TLPLogMessage(entry);
 		const request = this._prepareRequest(tlpLogMessage);
 
-		rp.post(request)
+		axios(request)
 			.catch(reason => {
 				console.log(`Failed to send log message to TLP - reason: ${reason.message}`);
 			});
@@ -36,10 +36,8 @@ export default class TLPAppender extends AbstractAppender {
 
 		return {
 			method: "POST",
-			uri: `${this._tlpLogging.host}/logs`,
-			body: tlpLogMessage,
-			json: true,
-			simple: false
+			url: `${this._tlpLogging.host}/logs`,
+			data: tlpLogMessage
 		};
 	}
 

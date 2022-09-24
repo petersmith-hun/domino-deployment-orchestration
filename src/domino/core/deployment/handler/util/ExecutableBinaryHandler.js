@@ -1,7 +1,7 @@
 import child_process from "child_process";
-import {snapshot} from "process-list";
 import LoggerFactory from "../../../../helper/LoggerFactory";
 import {DeploymentStatus} from "../../../domain/DeploymentStatus";
+import psList from "ps-list";
 
 const logger = LoggerFactory.createLogger('ExecutableBinaryHandler');
 
@@ -61,7 +61,7 @@ export default class ExecutableBinaryHandler {
 				this._findProcess(registration)
 					.then(foundProcess => {
 						if (foundProcess) {
-							logger.info(`Found PID=${foundProcess.pid} for cmdline='${foundProcess.cmdline}'`);
+							logger.info(`Found PID=${foundProcess.pid} for cmdline='${foundProcess.cmd}'`);
 							this._killProcessGroup(foundProcess.pid, resolve);
 						} else {
 							logger.warn(`Failed to stop process for appName=${registration.appName} - might be a first-time execution?`);
@@ -78,11 +78,9 @@ export default class ExecutableBinaryHandler {
 
 	_findProcess(registration) {
 
-		const snapshotPromise = snapshot('pid', 'cmdline');
-
 		return (async () => {
-			const processList = await snapshotPromise;
-			return processList.find(item => item.cmdline.includes(registration.source.resource));
+			const processList = await psList();
+			return processList.find(item => item.cmd.includes(registration.source.resource));
 		})();
 	}
 

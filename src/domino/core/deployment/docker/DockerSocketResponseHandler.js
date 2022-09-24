@@ -1,4 +1,5 @@
 import LoggerFactory from "../../../helper/LoggerFactory";
+import {ResponseHandlerPolicy} from "../../domain/DockerRequest";
 
 const logger = LoggerFactory.createLogger("DockerSocketResponseHandler");
 
@@ -8,7 +9,7 @@ const logger = LoggerFactory.createLogger("DockerSocketResponseHandler");
 export default class DockerSocketResponseHandler {
 
 	/**
-	 * Handles response made via 'request' library to the Docker Engine API.
+	 * Handles response made via 'Axios' library to the Docker Engine API.
 	 * Logic defines four handlers for the different states of responses:
 	 *  - response: first response of the engine, containing generic information about the call results (e.g. status code)
 	 *  - data: returned data chunk as JSON string (or multiple JSON strings separated by LF symbol)
@@ -35,53 +36,72 @@ export default class DockerSocketResponseHandler {
 	readDockerResponse(requestContext) {
 
 		const responseContext = {
-			requestError: false
+			requestError: false,
+			responseData: requestContext.responseHandlerPolicy === ResponseHandlerPolicy.LOG_AND_COLLECT_STREAM
+				? []
+				: null
 		};
 
-		if (requestContext.responseHandlerPolicy.streamResponse && requestContext.responseHandlerPolicy.collectResponse) {
-			responseContext.responseData = [];
+		if (requestContext.responseObject.status < 500) {
+			this._responseHandler(requestContext, responseContext, requestContext.responseObject);
+		} else {
+			this._errorHandler(requestContext, responseContext, requestContext.responseObject);
 		}
-
-		requestContext.responseObject
-			.on("response", (response) => this._responseHandler(requestContext, responseContext, response))
-			.on("data", (data) => this._dataHandler(requestContext, responseContext, data))
-			.on("error", (error) => this._errorHandler(requestContext, responseContext, error))
-			.on("end", () => this._endHandler(requestContext, responseContext));
 	}
 
 	_responseHandler(requestContext, responseContext, response) {
 
-		responseContext.statusCode = response.statusCode;
+		responseContext.statusCode = response.status;
 		responseContext.streamingResult = requestContext.responseHandlerPolicy.streamResponse;
-		logger.info(`Response received from Docker Engine for command=${requestContext.commandName} on registration=${requestContext.registrationName}, statusCode=${response.statusCode}`);
+		logger.info(`Response received from Docker Engine for command=${requestContext.commandName} on registration=${requestContext.registrationName}, statusCode=${response.status}`);
+
+		this._processData(requestContext, responseContext, requestContext.responseObject.data);
 	}
 
-	_dataHandler(requestContext, responseContext, data) {
+	_processData(requestContext, responseContext, data) {
 
-		Buffer.from(data)
-			.toString("UTF-8")
-			.trim()
-			.split("\n")
-			.forEach((line) => this._processDataLine(requestContext, responseContext, line));
+		if (requestContext.responseHandlerPolicy.streamResponse) {
+			data
+				.on("data", (line) => this._parseDataLine(line)
+					.forEach((item) => this._processDataItem(requestContext, responseContext, item)))
+				.on("end", () => this._endHandler(requestContext, responseContext));
+		} else {
+			this._processDataItem(requestContext, responseContext, data);
+			this._endHandler(requestContext, responseContext);
+		}
 	}
 
-	_processDataLine(requestContext, responseContext, line) {
+	_processDataItem(requestContext, responseContext, item) {
 
-		logger.info(`Docker ${requestContext.dockerVersion} | ${requestContext.registrationName} | ${line}`);
+		logger.info(`Docker ${requestContext.dockerVersion} | ${requestContext.registrationName} | ${JSON.stringify(item)}`);
 
 		if (requestContext.responseHandlerPolicy.collectResponse) {
-			const parsedLine = JSON.parse(line);
 			if (requestContext.responseHandlerPolicy.streamResponse) {
-				responseContext.responseData.push(parsedLine);
+				responseContext.responseData.push(item);
 			} else {
-				responseContext.responseData = parsedLine;
+				responseContext.responseData = item;
 			}
 		}
 	}
 
-	_errorHandler(requestContext, responseContext, error) {
+	_parseDataLine(line) {
 
-		logger.error(`Failed to execute Docker command=${requestContext.commandName} for registration=${requestContext.registrationName} - ${error.message}`);
+		return Buffer.from(line)
+			.toString("utf8")
+			.trim()
+			.split("\n")
+			.map((item) => {
+				try {
+					return JSON.parse(item);
+				} catch (error) {
+					logger.error(`Failed to parse item=${item} as JSON object - ${error.message}`);
+				}
+			});
+	}
+
+	_errorHandler(requestContext, responseContext, errorResponse) {
+
+		logger.error(`Failed to execute Docker command=${requestContext.commandName} for registration=${requestContext.registrationName} - ${errorResponse.status} | ${errorResponse.data}`);
 		responseContext.requestError = true;
 		requestContext.rejectionHandler(responseContext);
 	}

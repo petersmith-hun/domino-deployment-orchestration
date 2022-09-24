@@ -1,6 +1,6 @@
 import LoggerFactory from "../../../helper/LoggerFactory";
-import request from "request";
 import DockerRequest, {DockerCommand} from "../../domain/DockerRequest";
+import axios from "axios";
 
 const logger = LoggerFactory.createLogger("DockerSocketClient");
 
@@ -35,17 +35,21 @@ export default class DockerSocketClient {
 
 		logger.info(`Executing docker command=${command} for registration=${name}`);
 
-		return new Promise((resolve, reject) => {
+		return new Promise(async (resolve, reject) => {
 
-			this._dockerSocketResponseHandler.readDockerResponse({
-				responseObject: request(requestOptions),
-				dockerVersion: this._dockerVersion,
-				responseHandlerPolicy: dockerRequest.getCommand().responseHandlerPolicy,
-				commandName: command,
-				registrationName: name,
-				resolutionHandler: resolve,
-				rejectionHandler: reject
-			});
+			try {
+				this._dockerSocketResponseHandler.readDockerResponse({
+					responseObject: await axios(requestOptions),
+					dockerVersion: this._dockerVersion,
+					responseHandlerPolicy: dockerRequest.getCommand().responseHandlerPolicy,
+					commandName: command,
+					registrationName: name,
+					resolutionHandler: resolve,
+					rejectionHandler: reject
+				});
+			} catch (error) {
+				reject(error);
+			}
 		});
 	}
 
@@ -73,11 +77,13 @@ export default class DockerSocketClient {
 	_prepareDockerRequest(dockerRequest) {
 		return {
 			method: dockerRequest.getCommand().method,
-			uri: this._prepareURI(dockerRequest),
-			body: dockerRequest.getBody(),
-			json: true,
-			resolveWithFullResponse: true,
-			simple: false,
+			socketPath: this._dockerConfig.socket,
+			url: this._prepareURI(dockerRequest),
+			data: dockerRequest.getBody(),
+			validateStatus: false,
+			responseType: dockerRequest.getCommand().responseHandlerPolicy.streamResponse
+				? "stream"
+				: "json",
 			headers: {
 				"Host": null,
 				"X-Registry-Auth": this._prepareAuthHeader(dockerRequest)
@@ -87,7 +93,7 @@ export default class DockerSocketClient {
 
 	_prepareURI(dockerRequest) {
 
-		let uri = `http://unix:${this._dockerConfig.socket}:${dockerRequest.getCommand().path}`;
+		let uri = dockerRequest.getCommand().path;
 		dockerRequest.getUrlParameters().forEach((value, key) => {
 			uri = uri.replace(`{${key}}`, value);
 		});
@@ -104,7 +110,7 @@ export default class DockerSocketClient {
 				.find((server) => dockerRequest.getImageHome().startsWith(server.host));
 
 			if (selectedServer) {
-				authHeader = new Buffer(JSON.stringify({
+				authHeader = Buffer.from(JSON.stringify({
 					serveraddress: selectedServer.host,
 					username: selectedServer.username,
 					password: selectedServer.password
