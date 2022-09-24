@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@1.1.6
+  node: circleci/node@5.0.2
 
 # Reusable commands
 commands:
@@ -28,7 +28,7 @@ jobs:
   build-and-package:
     executor:
       name: node/default
-      tag: '12.13.0'
+      tag: '16.17.0'
     steps:
       - checkout
       - node/with-cache:

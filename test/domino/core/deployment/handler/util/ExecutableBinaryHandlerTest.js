@@ -6,7 +6,7 @@ import ExecutableBinaryHandler from "../../../../../../src/domino/core/deploymen
 import {ChildProcessTemplate} from "../../../../testutils/TestUtils";
 import child_process from "child_process";
 import {DeploymentStatus} from "../../../../../../src/domino/core/domain/DeploymentStatus";
-import process_list from "process-list";
+import * as mockery from "mockery";
 
 const _REGISTRATION = {
 	appName: "app",
@@ -22,12 +22,18 @@ describe("Unit tests for ExecutableBinaryHandler", () => {
 
 	beforeEach(() => {
 		childProcessMock = sinon.createStubInstance(ChildProcessTemplate);
+		mockery.enable({
+			warnOnReplace: false,
+			warnOnUnregistered: false,
+			useCleanCache: true
+		});
 
 		executableBinaryHandler = new ExecutableBinaryHandler();
 	});
 
 	afterEach(() => {
 		sinon.restore();
+		mockery.resetCache();
 	});
 
 	describe("Test scenarios for #spawnProcess", () => {
@@ -93,8 +99,10 @@ describe("Unit tests for ExecutableBinaryHandler", () => {
 
 			// given
 			const processFake = sinon.fake();
+			const psListResponse = _prepareSnapshotFake(true);
+
 			sinon.replace(process, "kill", processFake);
-			sinon.replace(process_list, "snapshot", _prepareSnapshotFake(true));
+			executableBinaryHandler = _prepareMockedExecutableBinaryHandler(psListResponse)
 
 			// when
 			const result = await executableBinaryHandler.killProcess(null, _REGISTRATION);
@@ -108,8 +116,10 @@ describe("Unit tests for ExecutableBinaryHandler", () => {
 
 			// given
 			const processFake = sinon.fake();
+			const psListResponse = _prepareSnapshotFake(false);
+
 			sinon.replace(process, "kill", processFake);
-			sinon.replace(process_list, "snapshot", _prepareSnapshotFake(false));
+			executableBinaryHandler = _prepareMockedExecutableBinaryHandler(psListResponse)
 
 			// when
 			const result = await executableBinaryHandler.killProcess(null, _REGISTRATION);
@@ -123,8 +133,10 @@ describe("Unit tests for ExecutableBinaryHandler", () => {
 
 			// given
 			const processFake = sinon.fake();
+			const psListResponse = Promise.reject(new Error("process list request failure"));
+
 			sinon.replace(process, "kill", processFake);
-			sinon.replace(process_list, "snapshot", sinon.fake.rejects(new Error("process list request failure")));
+			executableBinaryHandler = _prepareMockedExecutableBinaryHandler(psListResponse);
 
 			// when
 			const result = await executableBinaryHandler.killProcess(null, _REGISTRATION);
@@ -134,19 +146,29 @@ describe("Unit tests for ExecutableBinaryHandler", () => {
 			assert.isFalse(processFake.called);
 		});
 
+		function _prepareMockedExecutableBinaryHandler(psListResponse) {
+
+			mockery.deregisterAll();
+			mockery.registerMock("ps-list", () => {
+				return psListResponse;
+			});
+
+			return new (require("../../../../../../src/domino/core/deployment/handler/util/ExecutableBinaryHandler").default)();
+		}
+
 		function _prepareSnapshotFake(includeTargetProcess) {
 
 			const processList = [
-				{pid: 5123450, cmdline: "java -jar not-this-app.jar"},
-				{pid: 5123451, cmdline: "kernel"},
-				{pid: 5123453, cmdline: "some-other-binary"}
+				{pid: 5123450, cmd: "java -jar not-this-app.jar"},
+				{pid: 5123451, cmd: "kernel"},
+				{pid: 5123453, cmd: "some-other-binary"}
 			];
 
 			if (includeTargetProcess) {
-				processList.push({pid: 5123452, cmdline: "java -jar -Dsome=value app-v1.jar --spring.profiles.active=prod"});
+				processList.push({pid: 5123452, cmd: "java -jar -Dsome=value app-v1.jar --spring.profiles.active=prod"});
 			}
 
-			return sinon.fake.resolves(processList);
+			return Promise.resolve(processList);
 		}
 	});
 });

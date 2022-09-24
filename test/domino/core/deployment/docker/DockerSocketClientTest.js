@@ -1,6 +1,6 @@
 import {afterEach, beforeEach, describe, it} from "mocha";
 import {assert} from "chai";
-import sinon, {mock} from "sinon";
+import sinon from "sinon";
 import * as mockery from "mockery";
 import ConfigurationProvider from "../../../../../src/domino/core/config/ConfigurationProvider";
 import DockerSocketResponseHandler from "../../../../../src/domino/core/deployment/docker/DockerSocketResponseHandler";
@@ -43,8 +43,6 @@ describe("Unit tests for DockerSocketClient", () => {
 
 		dockerSocketResponseHandlerMock = sinon.createStubInstance(DockerSocketResponseHandler);
 		configurationProviderMock.getDockerConfig.returns(_DOCKER_CONFIG);
-
-		dockerSocketClient = _prepareDockerSocketClient();
 	});
 
 	afterEach(() => {
@@ -57,6 +55,7 @@ describe("Unit tests for DockerSocketClient", () => {
 		it("should prepare non-authenticated Docker request and request context", async () => {
 
 			// given
+			dockerSocketClient = _prepareDockerSocketClient();
 			const command = DockerCommand.START;
 			const dockerRequest = new DockerRequest(command, _REGISTRATION)
 				.addUrlParameter("id", "test-app");
@@ -68,6 +67,7 @@ describe("Unit tests for DockerSocketClient", () => {
 			await _waitForResolution();
 			const responseHandlerCallArgument = dockerSocketResponseHandlerMock.readDockerResponse.getCall(0).args[0];
 			responseHandlerCallArgument.resolutionHandler();
+			await resultPromise;
 
 			assert.equal(responseHandlerCallArgument.dockerVersion, "Unidentified");
 			assert.equal(responseHandlerCallArgument.responseHandlerPolicy, command.responseHandlerPolicy);
@@ -76,11 +76,11 @@ describe("Unit tests for DockerSocketClient", () => {
 			// responseObject is substituted by requestOptions at mock registration
 			assert.deepEqual(responseHandlerCallArgument.responseObject, {
 				method: command.method,
-				uri: `http://unix:${_DOCKER_CONFIG.socket}:/v1.40/containers/test-app/start`,
-				body: null,
-				json: true,
-				resolveWithFullResponse: true,
-				simple: false,
+				url: "/v1.40/containers/test-app/start",
+				socketPath: _DOCKER_CONFIG.socket,
+				data: null,
+				validateStatus: false,
+				responseType: "stream",
 				headers: {
 					"Host": null,
 					"X-Registry-Auth": null
@@ -91,6 +91,7 @@ describe("Unit tests for DockerSocketClient", () => {
 		it("should prepare authenticated Docker request and request context", async () => {
 
 			// given
+			dockerSocketClient = _prepareDockerSocketClient();
 			const command = DockerCommand.PULL;
 			const dockerRequest = new DockerRequest(command, _REGISTRATION)
 				.addUrlParameter("image", "app_image")
@@ -103,6 +104,7 @@ describe("Unit tests for DockerSocketClient", () => {
 			await _waitForResolution();
 			const responseHandlerCallArgument = dockerSocketResponseHandlerMock.readDockerResponse.getCall(0).args[0];
 			responseHandlerCallArgument.resolutionHandler();
+			await resultPromise;
 
 			assert.equal(responseHandlerCallArgument.dockerVersion, "Unidentified");
 			assert.equal(responseHandlerCallArgument.responseHandlerPolicy, command.responseHandlerPolicy);
@@ -111,11 +113,11 @@ describe("Unit tests for DockerSocketClient", () => {
 			// responseObject is substituted by requestOptions at mock registration
 			assert.deepEqual(responseHandlerCallArgument.responseObject, {
 				method: command.method,
-				uri: `http://unix:${_DOCKER_CONFIG.socket}:/v1.40/images/create?fromImage=app_image&tag=1.0`,
-				body: null,
-				json: true,
-				resolveWithFullResponse: true,
-				simple: false,
+				url: "/v1.40/images/create?fromImage=app_image&tag=1.0",
+				socketPath: _DOCKER_CONFIG.socket,
+				data: null,
+				validateStatus: false,
+				responseType: "stream",
 				headers: {
 					"Host": null,
 					"X-Registry-Auth": "eyJzZXJ2ZXJhZGRyZXNzIjoibG9jYWxob3N0OjEwMDAwIiwidXNlcm5hbWUiOiJ1c2VyMSIsInBhc3N3b3JkIjoicGFzczEifQ=="
@@ -126,6 +128,7 @@ describe("Unit tests for DockerSocketClient", () => {
 		it("should prepare authenticated Docker request and request context without configured server", async () => {
 
 			// given
+			dockerSocketClient = _prepareDockerSocketClient();
 			const registration = {
 				appName: "testapp",
 				source: {
@@ -144,6 +147,7 @@ describe("Unit tests for DockerSocketClient", () => {
 			await _waitForResolution();
 			const responseHandlerCallArgument = dockerSocketResponseHandlerMock.readDockerResponse.getCall(0).args[0];
 			responseHandlerCallArgument.resolutionHandler();
+			await resultPromise;
 
 			assert.equal(responseHandlerCallArgument.dockerVersion, "Unidentified");
 			assert.equal(responseHandlerCallArgument.responseHandlerPolicy, command.responseHandlerPolicy);
@@ -152,16 +156,38 @@ describe("Unit tests for DockerSocketClient", () => {
 			// responseObject is substituted by requestOptions at mock registration
 			assert.deepEqual(responseHandlerCallArgument.responseObject, {
 				method: command.method,
-				uri: `http://unix:${_DOCKER_CONFIG.socket}:/v1.40/images/create?fromImage=app_image&tag=1.0`,
-				body: null,
-				json: true,
-				resolveWithFullResponse: true,
-				simple: false,
+				url: "/v1.40/images/create?fromImage=app_image&tag=1.0",
+				socketPath: _DOCKER_CONFIG.socket,
+				data: null,
+				validateStatus: false,
+				responseType: "stream",
 				headers: {
 					"Host": null,
 					"X-Registry-Auth": null
 				}
 			});
+		});
+
+		it("should handle promise rejection by axios client", async () => {
+
+			// given
+			dockerSocketClient = _prepareDockerSocketClient(true);
+			const command = DockerCommand.START;
+			const dockerRequest = new DockerRequest(command, _REGISTRATION)
+				.addUrlParameter("id", "test-app");
+
+			// when
+			const resultPromise = dockerSocketClient.executeDockerCommand(dockerRequest);
+
+			// then
+			await _waitForResolution();
+			let rejectionCaught = false;
+			resultPromise
+				.catch(reason => {
+					rejectionCaught = true;
+					assert.equal(reason, "connection error");
+				})
+				.finally(() => assert.equal(rejectionCaught, true));
 		});
 	});
 	
@@ -169,8 +195,11 @@ describe("Unit tests for DockerSocketClient", () => {
 
 		it("should successfully identify Docker and store engine version", async () => {
 
+			// given
+			dockerSocketClient = _prepareDockerSocketClient();
+
 			// when
-			const resultPromise = dockerSocketClient.identifyDocker();
+			dockerSocketClient.identifyDocker();
 
 			// then
 			await _waitForResolution();
@@ -189,8 +218,11 @@ describe("Unit tests for DockerSocketClient", () => {
 
 		it("should fail to identify Docker and set engine version to Unavailable", async () => {
 
+			// given
+			dockerSocketClient = _prepareDockerSocketClient();
+
 			// when
-			const resultPromise = dockerSocketClient.identifyDocker();
+			dockerSocketClient.identifyDocker();
 
 			// then
 			await _waitForResolution();
@@ -203,12 +235,13 @@ describe("Unit tests for DockerSocketClient", () => {
 		});
 	});
 
-	function _prepareDockerSocketClient() {
+	function _prepareDockerSocketClient(reject = false) {
 
 		mockery.deregisterAll();
 		// mock with a little hack so test suite is able to access the generated requestOptions
-		mockery.registerMock("request", (requestOptions) => requestOptions);
-		mockery.registerMock("request-promise", () => {});
+		mockery.registerMock("axios", (requestOptions) => reject
+			? Promise.reject("connection error")
+			: Promise.resolve(requestOptions));
 
 		return new (require("../../../../../src/domino/core/deployment/docker/DockerSocketClient").default)(configurationProviderMock, dockerSocketResponseHandlerMock);
 	}

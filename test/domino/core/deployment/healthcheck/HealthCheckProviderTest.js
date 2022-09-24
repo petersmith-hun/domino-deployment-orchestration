@@ -98,9 +98,9 @@ describe("Unit tests for HealthCheckProvider", () => {
 
 		let callCount = 0;
 		mockery.deregisterAll();
-		mockery.registerMock("request-promise", () => {
+		mockery.registerMock("axios", () => {
 			return Promise.resolve({
-				statusCode: response[callCount++]
+				status: response[callCount++]
 			});
 		});
 
@@ -110,7 +110,7 @@ describe("Unit tests for HealthCheckProvider", () => {
 	function _prepareMockedHealthCheckProviderWithRejection() {
 
 		mockery.deregisterAll();
-		mockery.registerMock("request-promise", () => {
+		mockery.registerMock("axios", () => {
 			return Promise.reject(new Error("Failed to call app"));
 		});
 

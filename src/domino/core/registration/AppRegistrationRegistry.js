@@ -71,6 +71,6 @@ export default class AppRegistrationRegistry {
 	}
 
 	_readRegistrations() {
-		return yaml.safeLoad(fs.readFileSync(this._registrationsConfigFile));
+		return yaml.load(fs.readFileSync(this._registrationsConfigFile));
 	}
 }

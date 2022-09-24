@@ -50,7 +50,7 @@ describe("Unit tests for AbstractDeploymentHandler", () => {
 
 				// then
 				assert.equal(result, scenario.expectedResolution);
-				assert.equal(finishTime[1] / 1000000 > _START_TIMEOUT, scenario.startResolution !== null);
+				assert.equal(finishTime[1] / 1000000 >= _START_TIMEOUT, scenario.startResolution !== null);
 			});
 		});
 	});

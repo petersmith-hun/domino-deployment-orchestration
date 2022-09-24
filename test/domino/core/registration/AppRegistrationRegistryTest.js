@@ -170,10 +170,10 @@ describe("Unit tests for AppRegistrationRegistry", () => {
 
 			return _CONFIG_FILE_CONTENT;
 		});
-		sinon.stub(yaml, "safeLoad").callsFake((argument) => {
+		sinon.stub(yaml, "load").callsFake((argument) => {
 
 			if (argument !== _CONFIG_FILE_CONTENT) {
-				assert.fail(`yaml#safeLoad should have been called with '${_CONFIG_FILE_CONTENT}' argument`);
+				assert.fail(`yaml#load should have been called with '${_CONFIG_FILE_CONTENT}' argument`);
 			}
 
 			return _CONFIG_OBJECT;

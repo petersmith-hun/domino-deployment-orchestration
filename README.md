@@ -15,8 +15,8 @@ Domino was initially designed to serve the purposes above, and is an actively us
 1. [Key features](#key-features)
 2. [Requirements](#requirements)
 3. [Installation](#installation)
-    1. [Standard installation method](#standard-installation-method)
-    2. [Experimental installation method](#experimental-installation-method)
+    1. [Recommended installation method](#recommended-installation-method)
+    2. [Legacy installation method](#legacy-installation-method)
     3. [Important notes](#important-notes)
 4. [Configuration](#configuration)
     1. [System configuration](#system-configuration)
@@ -71,16 +71,52 @@ encrypting your management account password, etc.
 # Requirements
 
 * Linux server OS (tested on Debian 8, 9 and 10, Ubuntu should also be fine)
-* Node.js 12.x runtime environment or above (only for standard installation process)
+* Node.js 16.x runtime environment or above (only for legacy installation process)
 * Docker Engine installed (optional, for Docker support only)
 
 # Installation
 
-## Standard installation method
+## Recommended installation method
 
-Currently, Domino can be installed manually, however an experimental installation method has already been introduced.
-Please see the [Experimental installation method](#experimental-installation-method) section in case you're interested in that one,
-otherwise, please follow the guide below to properly install and start using Domino:
+The recommended way of installation is to use the self-contained binary version of Domino. Using this method does not require
+installing NodeJS environment, NPM, PM2, or anything else. The binary is available in the GitHub repository of Domino, under
+the [Release](https://github.com/petersmith-hun/domino-deployment-orchestration/releases) tab. For the latest binaries please
+check back often.
+
+To install Domino with this method please follow the guide below:
+1) Download the latest binary from the GitHub Releases page mentioned above. The binary is packaged as a tar.gz archive.
+2) Extract it on your server. In the package you'll find the binary named as `domino` and one `.node` file - please make
+   sure to have it next to the binary, as those are NodeJS native module libraries, required for executing Domino.
+3) Create your application registrations, and the base configuration the same way as you would do with standard installation.
+   Details about configuring Domino can be found in the [Configuration](#Configuration) section.
+4) To start Domino use either of the following methods below:
+    1) Run `./domino` (assuming you are standing in the directory where the binary is located). Please make sure that the
+       binary has execution permission. Also, you need to export the necessary environment variables, as described below under
+       the [Configuration](#Configuration) section.
+    2) Create a `systemd` or `init.d` service descriptor. Below is an example for the former one:
+
+    ```
+   [Unit]
+   Description=Domino
+   
+   [Service]
+   User=root
+   WorkingDirectory=/path/to/domino/folder
+   Environment=NODE_ENV=production NODE_CONFIG_DIR=/path/to/config/dir
+   ExecStart=/path/to/domino/folder/domino
+   SuccessExitStatus=143
+   TimeoutStopSec=10
+   Restart=no
+   KillMode=process
+   
+   [Install]
+   WantedBy=multi-user.target
+    ```
+
+## Legacy installation method
+
+Domino can also be installed manually, however this is not the recommended method anymore - if it's possible, please use the other way.
+In order to install Domino manually, please follow the steps below:
 1) Clone/download Domino from its [GitHub repository](https://github.com/petersmith-hun/domino-deployment-orchestration).
 2) Create a folder under Domino's root folder, named `logs`.
 3) Configure Domino via `config/default.yml` - for the accepted configuration parameters, please consult the 
@@ -93,48 +129,11 @@ or use the [Domino CLI tool's](https://github.com/petersmith-hun/domino-cli/#con
     1) Run `npm start`.
     2) Run `node src/domino_esm_start.js`.
     3) Install PM2 and run `pm2 start src/ecosystem.config.js`.
-    4) Create a `systemd` or `init.d` service descriptor. Below is an example for the former one:
+    4) Create a `systemd` or `init.d` service descriptor. It should be similar to the one mentioned above, but the `ExecStart`
+       parameter should be different:
     ```
-   [Unit]
-   Description=Domino
-   
-   [Service]
-   User=root
-   WorkingDirectory=/path/to/domino/folder
-   Environment=NODE_ENV=production NODE_CONFIG_DIR=/path/to/config/dir
    ExecStart=node src/domino_esm_start.js
-   SuccessExitStatus=143
-   TimeoutStopSec=10
-   Restart=no
-   KillMode=process
-   
-   [Install]
-   WantedBy=multi-user.target
-    ``` 
-
-
-## Experimental installation method
-
-An other way of installation is to use the self-contained binary version of Domino. Using this method does not require
-installing NodeJS environment, NPM, PM2, or anything else. The binary is available in the GitHub repository of Domino, under
-the [Release](https://github.com/petersmith-hun/domino-deployment-orchestration/releases) tab. For the latest binaries please
-check back often.
-
-To install Domino with this method please follow the guide below:
-1) Download the latest binary from the GitHub Releases page mentioned above. The binary is packaged as a tar.gz archive.
-2) Extract it on your server. In the package you'll find the binary named as `domino` and two `.node` files - please make
-sure to have them next to the binary, as those are NodeJS native module libraries, required for executing Domino.
-3) Create your application registrations, and the base configuration the same way as you would do with standard installation.
-Details about configuring Domino can be found in the [Configuration](#Configuration) section.
-4) To start Domino use either of the following methods below:
-    1) Run `./domino` (assuming you are standing in the directory where the binary is located). Please make sure that the
-    binary has execution permission. Also, you need to export the necessary environment variables, as described below under 
-    the [Configuration](#Configuration) section.
-    2) Create a `systemd` or `init.d` service descriptor. It should be similar to the one mentioned above, but the `ExecStart`
-    parameter should be different:
     ```
-   ExecStart=/path/to/domino
-    ``` 
    
 ## Important notes
 
@@ -634,6 +633,11 @@ As an example a response would look like this:
 For any of the endpoints above it is also possible that `403 Forbidden` is returned in case your JWT token is missing, invalid or expired.
 
 # Changelog
+
+**v1.4.0**
+* Updated Node.js runtime to v16.x
+* General maintenance (updated dependencies to eliminate known vulnerabilities)
+* Swapped out some deprecated libraries with up-to-date ones
 
 **v1.3.0-hotfix.1**
 * Fixed issue with 'jsonpath' occurring only in packaged application

@@ -1,8 +1,7 @@
 import {afterEach, beforeEach, describe, it} from "mocha";
 import {assert} from "chai";
-import sinon from "sinon";
-import TLPAppender from "../../../src/domino/helper/TLPAppender";
-import rp from "request-promise";
+import axios from "axios";
+import * as mockery from "mockery";
 
 const _LOGGING_CONFIG = {
 	tlpLogging: {
@@ -24,13 +23,19 @@ const LOG_SOURCE = "domino";
 describe("Unit tests for TLPAppender", () => {
 
 	let tlpAppender = null;
+	let requestOptionsParameterValue = null;
 
 	beforeEach(() => {
-		tlpAppender = new TLPAppender(_LOGGING_CONFIG);
+		mockery.enable({
+			warnOnReplace: false,
+			warnOnUnregistered: false,
+			useCleanCache: true
+		});
 	});
 
 	afterEach(() => {
-		sinon.restore();
+		mockery.resetCache();
+		requestOptionsParameterValue = null;
 	});
 
 	describe("Test scenarios for #write", () => {
@@ -38,61 +43,70 @@ describe("Unit tests for TLPAppender", () => {
 		it("should send error log message via HTTP", async () => {
 
 			// given
-			const rpFake = sinon.fake.resolves(true);
-			sinon.replace(rp, "post", rpFake);
+			tlpAppender = _prepareMockedTLPAppender(true);
 			const entry = _prepareEntry(true);
 
 			// when
 			await tlpAppender.write(entry);
 
 			// then
-			assert.deepEqual(rpFake.lastArg, _prepareExpectedRequest(true));
+			assert.deepEqual(requestOptionsParameterValue, _prepareExpectedRequest(true));
 		});
 
 		it("should send info log message via HTTP", async () => {
 
 			// given
-			const rpFake = sinon.fake.resolves(true);
-			sinon.replace(rp, "post", rpFake);
+			tlpAppender = _prepareMockedTLPAppender(true);
 			const entry = _prepareEntry(false);
 
 			// when
 			await tlpAppender.write(entry);
 
 			// then
-			assert.deepEqual(rpFake.lastArg, _prepareExpectedRequest(false));
+			assert.deepEqual(requestOptionsParameterValue, _prepareExpectedRequest(false));
 		});
 
 		it("should add default request ID and send info log message via HTTP", async () => {
 
 			// given
-			const rpFake = sinon.fake.resolves(true);
-			sinon.replace(rp, "post", rpFake);
+			tlpAppender = _prepareMockedTLPAppender(true);
 			const entry = _prepareEntry(false);
 			entry.requestID = null;
 			const expectedRequest = _prepareExpectedRequest(false);
-			expectedRequest.body.threadName = "main";
+			expectedRequest.data.threadName = "main";
 
 			// when
 			await tlpAppender.write(entry);
 
 			// then
-			assert.deepEqual(rpFake.lastArg, expectedRequest);
+			assert.deepEqual(requestOptionsParameterValue, expectedRequest);
 		});
 
 		it("should silently fail on HTTP request error", async () => {
 
 			// given
-			const rpFake = sinon.fake.rejects(new Error("request error"));
-			sinon.replace(rp, "post", rpFake);
+			tlpAppender = _prepareMockedTLPAppender(false);
 			const entry = _prepareEntry(false);
 
 			// when
 			await tlpAppender.write(entry);
 
 			// then
-			assert.deepEqual(rpFake.lastArg, _prepareExpectedRequest(false));
+			assert.deepEqual(requestOptionsParameterValue, _prepareExpectedRequest(false));
 		});
+
+		function _prepareMockedTLPAppender(successful) {
+
+			mockery.deregisterAll();
+			mockery.registerMock("axios", (requestOptions) => {
+				requestOptionsParameterValue = requestOptions
+				return successful
+					? Promise.resolve()
+					: Promise.reject(new Error("request error"));
+			});
+
+			return new (require("../../../src/domino/helper/TLPAppender").default)(_LOGGING_CONFIG);
+		}
 
 		function _prepareEntry(withError) {
 
@@ -119,8 +133,8 @@ describe("Unit tests for TLPAppender", () => {
 
 			return  {
 				method: HTTP_METHOD,
-				uri: REQUEST_URI,
-				body: {
+				url: REQUEST_URI,
+				data: {
 					source: LOG_SOURCE,
 					threadName: REQUEST_ID,
 					timeStamp: TIMESTAMP,
@@ -130,9 +144,7 @@ describe("Unit tests for TLPAppender", () => {
 					exception: withError
 						? _getExceptionContent()
 						: null
-				},
-				json: true,
-				simple: false
+				}
 			};
 		}
 

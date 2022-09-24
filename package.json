@@ -1,60 +1,55 @@
 {
   "name": "domino",
-  "version": "1.3.0-hotfix.1",
+  "version": "1.4.0",
   "description": "Deployment Orchestration for Minor Infrastructures, powered by Node.js",
   "main": "src/domino_esm_start.js",
-  "bin": "build/target/for_packaging/es5_src/domino_pkg_entry_point.js",
+  "bin": "build/target/for_packaging/es5_src/domino_main.js",
   "scripts": {
-    "test": "env NODE_ENV=test mocha --require @babel/register --require @babel/polyfill test/**/*.js",
-    "test_win": "set NODE_ENV=test&& mocha --require @babel/register --require @babel/polyfill test/**/*.js",
+    "test": "env NODE_ENV=test mocha --require @babel/register test/**/*.js",
+    "test_win": "set NODE_ENV=test&& mocha --require @babel/register test/**/*.js",
     "coverage": "nyc --all --reporter=html --report-dir=.nyc_output/coverage --exclude=build/**/* --exclude=test/**/* npm run test",
     "coverage_win": "nyc --all --reporter=html --report-dir=.nyc_output/coverage --exclude=build/**/* --exclude=test/**/* npm run test_win",
-    "start": "node src/domino_esm_start.js",
-    "preinstall": "npx npm-force-resolutions"
+    "start": "node src/domino_esm_start.js"
   },
   "pkg": {
-    "assets": "./config/di_config.json"
+    "assets": ["./build/target/for_packaging/es5_src/config/di_config.json"],
+    "scripts": "./build/target/for_packaging/es5_src/**/*.js"
   },
   "keywords": [],
   "author": "Peter Smith",
   "dependencies": {
-    "bcrypt": "5.0.0",
-    "bl": "3.0.1",
-    "body-parser": "1.19.0",
+    "axios": "0.27.2",
+    "bcrypt": "5.0.1",
+    "bl": "5.0.0",
+    "body-parser": "1.20.0",
     "cls-hooked": "4.2.2",
-    "cls-rtracer": "1.4.1",
-    "config": "3.2.2",
+    "cls-rtracer": "2.6.2",
+    "config": "3.3.8",
     "esm": "3.2.25",
-    "express": "4.17.1",
-    "js-yaml": "3.14.0",
-    "jsonpath-plus": "4.0.0",
+    "express": "4.18.1",
+    "js-yaml": "4.1.0",
+    "jsonpath-plus": "7.2.0",
     "jsonwebtoken": "8.5.1",
-    "lodash": "4.17.20",
-    "minimist": "1.2.5",
-    "ms": "2.1.2",
-    "multer": "1.4.2",
-    "node-dependency-injection": "2.6.8",
-    "process-list": "2.0.0",
+    "lodash": "^4.17.21",
+    "minimist": "^1.2.6",
+    "ms": "2.1.3",
+    "multer": "1.4.5-lts.1",
+    "node-dependency-injection": "3.0.3",
+    "ps-list": "7.2.0",
     "readline-sync": "1.4.10",
-    "regenerator-runtime": "0.13.7",
-    "request": "2.88.2",
-    "request-promise": "4.2.6",
-    "simple-node-logger": "18.12.24"
+    "regenerator-runtime": "0.13.9",
+    "simple-node-logger": "21.8.12"
   },
   "devDependencies": {
-    "@babel/cli": "7.11.6",
-    "@babel/core": "7.11.6",
-    "@babel/polyfill": "7.11.5",
-    "@babel/preset-env": "7.11.5",
-    "@babel/register": "7.11.5",
-    "chai": "4.2.0",
-    "glob": "7.1.6",
-    "mocha": "8.1.3",
+    "@babel/cli": "^7.18.10",
+    "@babel/core": "7.19.1",
+    "@babel/preset-env": "7.19.1",
+    "@babel/register": "7.18.9",
+    "chai": "4.3.6",
+    "glob": "8.0.3",
+    "mocha": "10.0.0",
     "mockery": "2.1.0",
     "nyc": "15.1.0",
-    "sinon": "9.1.0"
-  },
-  "resolutions": {
-    "minimist": "1.2.5"
+    "sinon": "14.0.0"
   }
 }

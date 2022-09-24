@@ -15,8 +15,8 @@ const _ENABLED_INFO_ENDPOINT_REGISTRATION = {
 	}
 }
 const _INFO_ENDPOINT_RESPONSE = {
-	statusCode: 200,
-	body: {
+	status: 200,
+	data: {
 		build: {
 			version: "1.0.0"
 		},
@@ -26,16 +26,16 @@ const _INFO_ENDPOINT_RESPONSE = {
 	}
 };
 const _INFO_ENDPOINT_RESPONSE_MISSING_VERSION = {
-	statusCode: 200,
-	body: {
+	status: 200,
+	data: {
 		app: {
 			name: "Test app"
 		}
 	}
 };
 const _INFO_ENDPOINT_RESPONSE_MULTIPLE_NAME = {
-	statusCode: 200,
-	body: {
+	status: 200,
+	data: {
 		build: {
 			version: "1.0.0"
 		},
@@ -92,16 +92,13 @@ describe("Unit tests for InfoProvider", () => {
 			// then
 			assert.deepEqual(requestOptionsParameterValue, {
 				method: "GET",
-				uri: _ENABLED_INFO_ENDPOINT_REGISTRATION.appInfo.endpoint,
-				json: true,
-				resolveWithFullResponse: true,
-				simple: false
+				url: _ENABLED_INFO_ENDPOINT_REGISTRATION.appInfo.endpoint
 			})
 			assert.deepEqual(result, {
 				status: InfoStatus.PROVIDED,
 				info: {
-					version: _INFO_ENDPOINT_RESPONSE.body.build.version,
-					name: _INFO_ENDPOINT_RESPONSE.body.app.name
+					version: _INFO_ENDPOINT_RESPONSE.data.build.version,
+					name: _INFO_ENDPOINT_RESPONSE.data.app.name
 				}
 			})
 		});
@@ -118,7 +115,7 @@ describe("Unit tests for InfoProvider", () => {
 			assert.deepEqual(result, {
 				status: InfoStatus.MISCONFIGURED,
 				info: {
-					name: _INFO_ENDPOINT_RESPONSE.body.app.name
+					name: _INFO_ENDPOINT_RESPONSE.data.app.name
 				}
 			})
 		});
@@ -135,7 +132,7 @@ describe("Unit tests for InfoProvider", () => {
 			assert.deepEqual(result, {
 				status: InfoStatus.MISCONFIGURED,
 				info: {
-					version: _INFO_ENDPOINT_RESPONSE.body.build.version
+					version: _INFO_ENDPOINT_RESPONSE.data.build.version
 				}
 			})
 		});
@@ -172,7 +169,7 @@ describe("Unit tests for InfoProvider", () => {
 	function _prepareMockedInfoProvider(rpResponse) {
 
 		mockery.deregisterAll();
-		mockery.registerMock("request-promise", (requestOptions) => {
+		mockery.registerMock("axios", (requestOptions) => {
 			requestOptionsParameterValue = requestOptions
 			return Promise.resolve(rpResponse);
 		});
@@ -183,7 +180,7 @@ describe("Unit tests for InfoProvider", () => {
 	function _prepareMockedRejectingInfoProvider() {
 
 		mockery.deregisterAll();
-		mockery.registerMock("request-promise", () => {
+		mockery.registerMock("axios", () => {
 			return Promise.reject({
 				message: "Rejecting test case"
 			});
