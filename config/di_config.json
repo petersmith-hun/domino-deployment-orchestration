@@ -204,7 +204,8 @@
     "web.controller.auth": {
       "class": "domino/web/controller/AuthenticationController",
       "arguments": [
-        "@web.component.jwt-utility"
+        "@web.component.jwt-utility",
+        "@core.component.config-provider"
       ]
     }
   }

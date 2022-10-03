@@ -13,6 +13,8 @@ import InvalidRequestError from "../error/InvalidRequestError";
 import NonExistingExecutableError from "../../core/error/NonExistingExecutableError";
 import AuthenticationError from "../error/AuthenticationError";
 import LoggerFactory from "../../helper/LoggerFactory";
+import {auth, UnauthorizedError} from "express-oauth2-jwt-bearer";
+import {AuthorizationMode} from "../../core/domain/AuthorizationMode";
 
 const logger = LoggerFactory.createLogger("ExpressMiddlewareProvider");
 const _PUBLIC_ENDPOINTS = [
@@ -27,6 +29,7 @@ export default class ExpressMiddlewareProvider {
 	constructor(jwtUtility, configurationProvider) {
 		this._jwtUtility = jwtUtility;
 		this._securityConfig = configurationProvider.getSecurityConfig();
+		this._authenticationMode = configurationProvider.getAuthorizationMode();
 	}
 
 	/**
@@ -38,7 +41,7 @@ export default class ExpressMiddlewareProvider {
 	 */
 	jwtVerification(req, resp, next) {
 
-		if (_PUBLIC_ENDPOINTS.includes(req.path)) {
+		if (this._authenticationMode === AuthorizationMode.OAUTH || _PUBLIC_ENDPOINTS.includes(req.path)) {
 			next();
 		} else {
 			try {
@@ -48,6 +51,21 @@ export default class ExpressMiddlewareProvider {
 				resp.status(HTTP_STATUS_FORBIDDEN)
 					.send();
 			}
+		}
+	}
+
+	/**
+	 * Provides an Express middleware for OAuth access token verification.
+	 */
+	oauthJWTVerification() {
+
+		if (this._authenticationMode === AuthorizationMode.DIRECT) {
+			return (req, resp, next) => next();
+		} else {
+			return auth({
+				issuerBaseURL: this._securityConfig["oauth-issuer"],
+				audience: this._securityConfig["oauth-audience"]
+			});
 		}
 	}
 
@@ -86,7 +104,7 @@ export default class ExpressMiddlewareProvider {
 
 	/**
 	 * Error handler for async endpoints.
-	 * Wraps every endpoints as a Promise, passing forward every request and catching every exception, passing up to Express error handlers.
+	 * Wraps every endpoint as a Promise, passing forward every request and catching every exception, passing up to Express error handlers.
 	 *
 	 * @param endpointRegistration async endpoint registration to be handled by this error handler
 	 * @returns {function(*=, *=, *=): Promise<unknown>} error handler Promise
@@ -123,7 +141,7 @@ export default class ExpressMiddlewareProvider {
 			status = HTTP_STATUS_BAD_REQUEST;
 		} else if (err instanceof NonExistingExecutableError) {
 			status = HTTP_STATUS_NOT_FOUND;
-		} else if (err instanceof AuthenticationError) {
+		} else if (err instanceof AuthenticationError || err instanceof UnauthorizedError) {
 			status = HTTP_STATUS_FORBIDDEN;
 		} else {
 			logger.error("Unhandled error occurred\n", err);

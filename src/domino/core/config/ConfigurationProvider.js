@@ -1,4 +1,5 @@
 import config from "config";
+import {AuthorizationMode} from "../domain/AuthorizationMode";
 
 /**
  * Wrapper component for config.get calls.
@@ -68,6 +69,22 @@ export default class ConfigurationProvider {
 	 */
 	getSecurityConfig() {
 		return config.get("domino.auth");
+	}
+
+	/**
+	 * Returns the active authorization mode.
+	 *
+	 * @return {AuthorizationMode}
+	 */
+	getAuthorizationMode() {
+
+		let authorizationMode = AuthorizationMode.DIRECT;
+		if (config.has("domino.auth.auth-mode")) {
+			authorizationMode = Object.values(AuthorizationMode)
+				.find(value => value === config.get("domino.auth.auth-mode").toLowerCase()) || AuthorizationMode.DIRECT;
+		}
+
+		return authorizationMode;
 	}
 
 	/**

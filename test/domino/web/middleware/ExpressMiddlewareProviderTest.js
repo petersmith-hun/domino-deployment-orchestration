@@ -12,6 +12,8 @@ import NonRegisteredAppError from "../../../../src/domino/web/error/NonRegistere
 import AlreadyExistingExecutableError from "../../../../src/domino/web/error/AlreadyExistingExecutableError";
 import InvalidRequestError from "../../../../src/domino/web/error/InvalidRequestError";
 import NonExistingExecutableError from "../../../../src/domino/core/error/NonExistingExecutableError";
+import {UnauthorizedError} from "express-oauth2-jwt-bearer";
+import {AuthorizationMode} from "../../../../src/domino/core/domain/AuthorizationMode";
 
 describe("Unit tests for ExpressMiddlewareProvider", () => {
 
@@ -26,8 +28,11 @@ describe("Unit tests for ExpressMiddlewareProvider", () => {
 		responseMock = sinon.createStubInstance(ResponseStubTemplate);
 
 		configurationProviderMock.getSecurityConfig.returns({
-			"allowed-sources": ["127.0.0.1", "192.168.0.1"]
+			"allowed-sources": ["127.0.0.1", "192.168.0.1"],
+			"oauth-issuer": "http://localhost:9999",
+			"oauth-audience": "aud:domino"
 		});
+		configurationProviderMock.getAuthorizationMode.returns(AuthorizationMode.DIRECT);
 
 		expressMiddlewareProvider = new ExpressMiddlewareProvider(jwtUtilityMock, configurationProviderMock);
 	});
@@ -45,6 +50,27 @@ describe("Unit tests for ExpressMiddlewareProvider", () => {
 				path: "/claim-token"
 			};
 			let nextCalled = false;
+
+			// when
+			expressMiddlewareProvider.jwtVerification(requestParams, responseMock, () => {
+				nextCalled = true;
+			});
+
+			// then
+			assert.isTrue(nextCalled);
+			sinon.assert.notCalled(jwtUtilityMock.verifyToken);
+		});
+
+		it("should fall through when OAuth authorization is active", () => {
+
+			// given
+			const requestParams = {
+				path: "/protected/endpoint"
+			};
+			let nextCalled = false;
+
+			configurationProviderMock.getAuthorizationMode.returns(AuthorizationMode.OAUTH);
+			expressMiddlewareProvider = new ExpressMiddlewareProvider(jwtUtilityMock, configurationProviderMock);
 
 			// when
 			expressMiddlewareProvider.jwtVerification(requestParams, responseMock, () => {
@@ -99,6 +125,36 @@ describe("Unit tests for ExpressMiddlewareProvider", () => {
 			assert.isFalse(nextCalled);
 			sinon.assert.calledWith(responseMock.status, 403);
 			sinon.assert.called(responseMock.send);
+		});
+	});
+
+	describe("Test scenarios for #oauthJWTVerification", () => {
+
+		it("should fall through when direct authorization is active", () => {
+
+			// given
+			let nextCalled = false;
+
+			// when
+			expressMiddlewareProvider.oauthJWTVerification()({}, responseMock, () => {
+				nextCalled = true;
+			});
+
+			// then
+			assert.isTrue(nextCalled);
+		});
+
+		it("should try authorization of request when OAuth mode is active", () => {
+
+			// given
+			configurationProviderMock.getAuthorizationMode.returns(AuthorizationMode.OAUTH);
+			expressMiddlewareProvider = new ExpressMiddlewareProvider(jwtUtilityMock, configurationProviderMock);
+
+			// when
+			const result = expressMiddlewareProvider.oauthJWTVerification();
+
+			// then
+			assert.isTrue(result instanceof Function);
 		});
 	});
 
@@ -229,6 +285,7 @@ describe("Unit tests for ExpressMiddlewareProvider", () => {
 			{error: new InvalidRequestError(), expectedStatus: 400},
 			{error: new NonExistingExecutableError(), expectedStatus: 404},
 			{error: new AuthenticationError(), expectedStatus: 403},
+			{error: new UnauthorizedError(), expectedStatus: 403},
 			{error: new Error(), expectedStatus: 500},
 		];
 
