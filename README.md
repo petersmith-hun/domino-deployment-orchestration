@@ -233,8 +233,8 @@ The scopes supported by Domino are the following:
 
 Further notes:
  * When Domino is set to "oauth" authorization mode, `/claim-token` endpoint is disabled, therefore Domino cannot issue
-access tokens directly. This also means, that Domino won't accept tokens such tokens.
- * Audience value is optional, but recommended. If provided, the audience value of the access token must be the one
+access tokens directly. This also means, that Domino won't accept such tokens.
+ * Audience value is optional, but recommended. If provided, the audience value of the access token must match the one
 specified by the `domino.auth.oauth-audience` parameter.
  * Please make sure, that the discovery endpoint of your authorization server publishes the JWK Set endpoint as well.
 This is crucial for Domino to be able to verify the access token signature.
