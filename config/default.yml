@@ -57,8 +57,13 @@ domino:
     # storage path where uploaded binaries will be stored
     path: storage/
 
-  # management account authentication configuration
+  # management account / OAuth authentication configuration
   auth:
+
+    # authorization mode
+    # direct: access token can be claimed by calling Domino's /claim-token endpoint (legacy)
+    # oauth: access token is provided by an external OAuth 2.0 Authorization Server (see oauth-issuer and oauth-audience parameters)
+    auth-mode: direct
 
     # authentication JWT token expiration (in ms (https://github.com/zeit/ms#readme) utility compatible format)
     expiration: "30 days"
@@ -73,6 +78,14 @@ domino:
     # password must be provided in BCrypt encoded format
     # Domino CLI provides utility for password encryption
     password: <PROVIDE_ME>
+
+    # OAuth 2.0 Authorization Server address for access token verification
+    # the specified server must have a /.well-known/oauth-authorization-server discovery endpoint
+    oauth-issuer: <PROVIDE_ME>
+
+    # OAuth audience value of Domino
+    # the access token used against Domino must have the same audience as specified here
+    oauth-audience: <PROVIDE_ME>
 
     # list of remote host addresses from where access to Domino is allowed
     # specify ALL keyword to disable remote host checking

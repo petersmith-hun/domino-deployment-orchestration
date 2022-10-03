@@ -68,6 +68,10 @@ encrypting your management account password, etc.
 7) **Docker support**  
 (Since v1.2.0) Domino is also able to handle Docker containers.
 
+8) **Integration with OAuth 2.0 Authorization Server**  
+(Since v1.5.0) Domino can be integrated with any OAuth 2.0 Authorization Server as a Resource Server (using Client 
+Credentials Grant Flow).
+
 # Requirements
 
 * Linux server OS (tested on Debian 8, 9 and 10, Ubuntu should also be fine)
@@ -195,13 +199,45 @@ Application executable binary storage related configuration parameters.
 
 Access controls.
 
-| Parameter                     | Description                                                                                                                            |
-|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| `domino.auth.expiration`      | Access token expiration in [ms utility](https://github.com/zeit/ms#readme) compatible format.                                          |
-| `domino.auth.jwt-private-key` | JWT signing private key (HMAC SHA encrypting is used).                                                                                 |
-| `domino.auth.username`        | Domino management account username.                                                                                                    |
-| `domino.auth.password`        | Domino management account password. Password must be encrypted before provided here. For encryption it is suggested to use Domino CLI. |
-| `domino.auth.allowed-sources` | List of allowed remote addresses accessing Domino. Specify `ALL` to turn off remote address verification.                              |
+| Parameter                      | Description                                                                                                                                                                                                            |
+|--------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `domino.auth.auth-mode`        | Active authorization mode. Defaults to "direct", which is the legacy behavior, using JWT access tokens requested from Domino. Set to "oauth" to change to external OAuth 2.0 Authorization Server based authorization. |
+| `domino.auth.expiration`       | Access token expiration in [ms utility](https://github.com/zeit/ms#readme) compatible format.                                                                                                                          |
+| `domino.auth.jwt-private-key`  | JWT signing private key (HMAC SHA encrypting is used).                                                                                                                                                                 |
+| `domino.auth.username`         | Domino management account username.                                                                                                                                                                                    |
+| `domino.auth.password`         | Domino management account password. Password must be encrypted before provided here. For encryption it is suggested to use Domino CLI.                                                                                 |
+| `domino.auth.allowed-sources`  | List of allowed remote addresses accessing Domino. Specify `ALL` to turn off remote address verification.                                                                                                              |
+| `domino.auth.oauth-issuer`     | OAuth 2.0 Authorization Server address for access token verification. (Optional, used only in "oauth" authorization mode.)                                                                                             |
+| `domino.auth.oauth-audience`   | OAuth audience value of Domino. (Optional, used only in "oauth" authorization mode.)                                                                                                                                   |
+
+_OAuth authorization mode_
+
+Domino can be configured to accept access tokens issued by an external OAuth 2.0 Authorization Server. Currently, only JWT token
+based authorization is supported, please make sure to configure the authorization server to generate JWT tokens, if you
+wish to use this feature. Also, the recommended grant flow is Client Credentials. 
+
+The integration verifies the token expiration, issuer and audience values on each request, as well as the signature. 
+The issuer address (`domino.auth.oauth-issuer` parameter) is also used to acquire the Authorization Server's configuration 
+via its discovery endpoint (`/.well-known/oauth-authorization-server`) - please make sure, that the authorization server 
+you wish to use, has this endpoint.
+
+The scopes supported by Domino are the following:
+
+| Scope          | Description                                                                   |
+|----------------|-------------------------------------------------------------------------------|
+| `read:info`    | Used by the `/lifecycle/:app/info` endpoint.                                  |
+| `write:deploy` | Used by the `/lifecycle/:app/deploy[/:version]` endpoint.                     |
+| `write:start`  | Used by the `/lifecycle/:app/start` and `/lifecycle/:app:/restart` endpoints. |
+| `write:delete` | Used by the `/lifecycle/:app/stop` and `/lifecycle/:app:/restart` endpoints.  |
+| `write:upload` | Used by the `/upload/:app/:version` endpoint.                                 |
+
+Further notes:
+ * When Domino is set to "oauth" authorization mode, `/claim-token` endpoint is disabled, therefore Domino cannot issue
+access tokens directly. This also means, that Domino won't accept such tokens.
+ * Audience value is optional, but recommended. If provided, the audience value of the access token must match the one
+specified by the `domino.auth.oauth-audience` parameter.
+ * Please make sure, that the discovery endpoint of your authorization server publishes the JWK Set endpoint as well.
+This is crucial for Domino to be able to verify the access token signature.
 
 ## Docker configuration
 
@@ -633,6 +669,9 @@ As an example a response would look like this:
 For any of the endpoints above it is also possible that `403 Forbidden` is returned in case your JWT token is missing, invalid or expired.
 
 # Changelog
+
+**v1.5.0**
+* Implemented support for integrating Domino with any OAuth 2.0 Authorization Server as a Resource Server
 
 **v1.4.0**
 * Updated Node.js runtime to v16.x

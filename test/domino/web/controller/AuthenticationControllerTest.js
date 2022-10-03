@@ -5,6 +5,9 @@ import sinon from "sinon";
 import JWTUtility from "../../../../src/domino/web/util/JWTUtility";
 import AuthenticationController from "../../../../src/domino/web/controller/AuthenticationController";
 import {ResponseStubTemplate} from "../../testutils/TestUtils";
+import ConfigurationProvider from "../../../../src/domino/core/config/ConfigurationProvider";
+import {AuthorizationMode} from "../../../../src/domino/core/domain/AuthorizationMode";
+import AuthenticationError from "../../../../src/domino/web/error/AuthenticationError";
 
 const REQUEST_BODY = {"username": "user1"};
 const GENERATED_TOKEN = "generated-token";
@@ -14,14 +17,18 @@ describe("Unit tests for AuthenticationController", () => {
 	let requestMock = null;
 	let responseMock = null;
 	let jwtUtilityMock = null;
+	let configurationProviderMock = null;
 	let authenticationController = null;
 
 	beforeEach(() => {
 		requestMock = sinon.stub();
 		responseMock = sinon.createStubInstance(ResponseStubTemplate);
 		jwtUtilityMock = sinon.createStubInstance(JWTUtility);
+		configurationProviderMock = sinon.createStubInstance(ConfigurationProvider);
 
-		authenticationController = new AuthenticationController(jwtUtilityMock);
+		configurationProviderMock.getAuthorizationMode.returns(AuthorizationMode.DIRECT);
+
+		authenticationController = new AuthenticationController(jwtUtilityMock, configurationProviderMock);
 	});
 
 	afterEach(() => {
@@ -42,6 +49,20 @@ describe("Unit tests for AuthenticationController", () => {
 
 			// then
 			sinon.assert.calledWith(responseMock.send, {jwt: GENERATED_TOKEN});
+		});
+
+		it("should reject token creation when OAuth mode is active", () => {
+
+			// given
+			requestMock.body = REQUEST_BODY;
+			configurationProviderMock.getAuthorizationMode.returns(AuthorizationMode.OAUTH);
+			authenticationController = new AuthenticationController(jwtUtilityMock, configurationProviderMock);
+
+			// when
+			assert.throws(() => authenticationController.claimToken(requestMock, responseMock), AuthenticationError, "Unsupported authentication method");
+
+			// then
+			sinon.assert.notCalled(jwtUtilityMock.createToken);
 		});
 	});
 
