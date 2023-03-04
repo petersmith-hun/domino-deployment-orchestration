@@ -97,14 +97,14 @@ describe("Unit tests for ControllerRegistrations", () => {
 			// then
 			_assertMiddlewares(8, 3);
 			_assertNumberOfControllers(8);
-			_assertControllerRegistered(expressMock.get, "/lifecycle/:app/info", lifecycleControllerMock.getInfo, true);
-			_assertControllerRegistered(expressMock.put, "/lifecycle/:app/deploy", lifecycleControllerMock.deploy, true);
-			_assertControllerRegistered(expressMock.put, "/lifecycle/:app/deploy/:version", lifecycleControllerMock.deploy, true);
-			_assertControllerRegistered(expressMock.put, "/lifecycle/:app/start", lifecycleControllerMock.start, true);
-			_assertControllerRegistered(expressMock.put, "/lifecycle/:app/restart", lifecycleControllerMock.restart, true);
-			_assertControllerRegistered(expressMock.delete, "/lifecycle/:app/stop", lifecycleControllerMock.stop, true);
+			_assertControllerRegistered(expressMock.get, "/lifecycle/:app/info", lifecycleControllerMock.getInfo, "callNext");
+			_assertControllerRegistered(expressMock.put, "/lifecycle/:app/deploy", lifecycleControllerMock.deploy, "callNext");
+			_assertControllerRegistered(expressMock.put, "/lifecycle/:app/deploy/:version", lifecycleControllerMock.deploy, "callNext");
+			_assertControllerRegistered(expressMock.put, "/lifecycle/:app/start", lifecycleControllerMock.start, "callNext");
+			_assertControllerRegistered(expressMock.put, "/lifecycle/:app/restart", lifecycleControllerMock.restart, "callNext");
+			_assertControllerRegistered(expressMock.delete, "/lifecycle/:app/stop", lifecycleControllerMock.stop, "callNext");
 			_assertControllerRegistered(expressMock.post, "/claim-token", authControllerMock.claimToken);
-			_assertControllerRegistered(expressMock.post, "/upload/:app/:version", uploadControllerMock.uploadExecutable, true, true);
+			_assertControllerRegistered(expressMock.post, "/upload/:app/:version", uploadControllerMock.uploadExecutable, "callNext", true);
 		});
 
 		it("should register routes throw error on missing controller registration", () => {
@@ -183,7 +183,14 @@ describe("Unit tests for ControllerRegistrations", () => {
 		}
 
 		function _assertScope(callArgs, scope) {
-			assert.equal(callArgs, scope);
+
+			if (scope === "callNext") {
+				let nextCalled = false;
+				callArgs(null, null, () => { nextCalled = true; });
+				assert.isTrue(nextCalled);
+			} else {
+				assert.equal(callArgs, scope);
+			}
 		}
 
 		function _assertController(callArgs, controllerMock) {
