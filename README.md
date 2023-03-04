@@ -670,6 +670,9 @@ For any of the endpoints above it is also possible that `403 Forbidden` is retur
 
 # Changelog
 
+**v1.5.1**
+* Fixed Domino startup issue when direct authorization mode is selected
+
 **v1.5.0**
 * Implemented support for integrating Domino with any OAuth 2.0 Authorization Server as a Resource Server
 

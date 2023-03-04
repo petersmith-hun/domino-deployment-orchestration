@@ -72,7 +72,7 @@ export default class ControllerRegistrations {
 
 		return this._authorizationMode === AuthorizationMode.OAUTH
 			? requiredScopes(scope)
-			: true;
+			: (req, resp, next) => next();
 	}
 
 	_wrapAsyncError(endpointRegistration) {
