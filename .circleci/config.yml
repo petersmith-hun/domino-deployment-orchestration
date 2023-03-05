@@ -28,7 +28,7 @@ jobs:
   build-and-package:
     executor:
       name: node/default
-      tag: '16.17'
+      tag: '18.14.2'
     steps:
       - checkout
       - run:
