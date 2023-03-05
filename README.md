@@ -670,6 +670,10 @@ For any of the endpoints above it is also possible that `403 Forbidden` is retur
 
 # Changelog
 
+**v1.5.2**
+* Updated Node.js runtime to v18.x
+* General maintenance (updated dependencies to eliminate known vulnerabilities) 
+
 **v1.5.1**
 * Fixed Domino startup issue when direct authorization mode is selected
 
